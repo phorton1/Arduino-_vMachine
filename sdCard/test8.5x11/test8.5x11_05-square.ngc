@@ -1,0 +1,312 @@
+; this is my prh header
+
+G56     ; change to 8.5x11 coordinate system
+
+; prh - start of generated gcode
+G21 (All units in mm)
+
+(Start cutting path id: path1800)
+(Change tool to Default tool)
+
+G00 Z10.000000
+G00 X101.641170 Y40.632390
+
+G01 Z0.000000 F1100.0(Penetrate)
+G01 X88.920570 Y27.289790 Z0.000000 F1200.000000
+G00 Z10.000000
+
+(End cutting path id: path1800)
+
+
+(Start cutting path id: path1798)
+(Change tool to Default tool)
+
+G00 Z10.000000
+G00 X88.920570 Y40.632390
+
+G01 Z0.000000 F1100.0(Penetrate)
+G01 X76.200000 Y27.289790 Z0.000000 F1200.000000
+G00 Z10.000000
+
+(End cutting path id: path1798)
+
+
+(Start cutting path id: path1794)
+(Change tool to Default tool)
+
+G00 Z10.000000
+G00 X76.200000 Y53.975000
+
+G01 Z0.000000 F1100.0(Penetrate)
+G01 X50.758830 Y27.289790 Z0.000000 F1200.000000
+G00 Z10.000000
+
+(End cutting path id: path1794)
+
+
+(Start cutting path id: path1790)
+(Change tool to Default tool)
+
+G00 Z10.000000
+G00 X38.038249 Y40.632390
+
+G01 Z0.000000 F1100.0(Penetrate)
+G01 X63.479410 Y67.317570 Z0.000000 F1200.000000
+G00 Z10.000000
+
+(End cutting path id: path1790)
+
+
+(Start cutting path id: path1788)
+(Change tool to Default tool)
+
+G00 Z10.000000
+G00 X76.200000 Y67.317570
+
+G01 Z0.000000 F1100.0(Penetrate)
+G01 X38.038249 Y27.289790 Z0.000000 F1200.000000
+G00 Z10.000000
+
+(End cutting path id: path1788)
+
+
+(Start cutting path id: path1772)
+(Change tool to Default tool)
+
+G00 Z10.000000
+G00 X38.038249 Y40.632390
+
+G01 Z0.000000 F1100.0(Penetrate)
+G01 X101.641170 Y40.632390 Z0.000000 F1200.000000
+G00 Z10.000000
+
+(End cutting path id: path1772)
+
+
+(Start cutting path id: path1796)
+(Change tool to Default tool)
+
+G00 Z10.000000
+G00 X88.920570 Y53.975000
+
+G01 Z0.000000 F1100.0(Penetrate)
+G01 X63.479410 Y27.289790 Z0.000000 F1200.000000
+G00 Z10.000000
+
+(End cutting path id: path1796)
+
+
+(Start cutting path id: path1770)
+(Change tool to Default tool)
+
+G00 Z10.000000
+G00 X38.038249 Y53.975000
+
+G01 Z0.000000 F1100.0(Penetrate)
+G01 X101.641170 Y53.975000 Z0.000000 F1200.000000
+G00 Z10.000000
+
+(End cutting path id: path1770)
+
+
+(Start cutting path id: path1782)
+(Change tool to Default tool)
+
+G00 Z10.000000
+G00 X88.920570 Y94.002800
+
+G01 Z0.000000 F1100.0(Penetrate)
+G01 X101.641170 Y80.660220 Z0.000000 F1200.000000
+G00 Z10.000000
+
+(End cutting path id: path1782)
+
+
+(Start cutting path id: path1758)
+(Change tool to Default tool)
+
+G00 Z10.000000
+G00 X88.920570 Y94.002800
+
+G01 Z0.000000 F1100.0(Penetrate)
+G01 X88.920570 Y27.289790 Z0.000000 F1200.000000
+G00 Z10.000000
+
+(End cutting path id: path1758)
+
+
+(Start cutting path id: path1786)
+(Change tool to Default tool)
+
+G00 Z10.000000
+G00 X63.479410 Y80.660220
+
+G01 Z0.000000 F1100.0(Penetrate)
+G01 X38.038249 Y53.975000 Z0.000000 F1200.000000
+G00 Z10.000000
+
+(End cutting path id: path1786)
+
+
+(Start cutting path id: path1792)
+(Change tool to Default tool)
+
+G00 Z10.000000
+G00 X38.038249 Y67.317570
+
+G01 Z0.000000 F1100.0(Penetrate)
+G01 X50.758830 Y80.660220 Z0.000000 F1200.000000
+G00 Z10.000000
+
+(End cutting path id: path1792)
+
+
+(Start cutting path id: path1766)
+(Change tool to Default tool)
+
+G00 Z10.000000
+G00 X38.038249 Y80.660220
+
+G01 Z0.000000 F1100.0(Penetrate)
+G01 X101.641170 Y80.660220 Z0.000000 F1200.000000
+G00 Z10.000000
+
+(End cutting path id: path1766)
+
+
+(Start cutting path id: path1780)
+(Change tool to Default tool)
+
+G00 Z10.000000
+G00 X76.200000 Y94.002800
+
+G01 Z0.000000 F1100.0(Penetrate)
+G01 X101.641170 Y67.317570 Z0.000000 F1200.000000
+G00 Z10.000000
+
+(End cutting path id: path1780)
+
+
+(Start cutting path id: path1760)
+(Change tool to Default tool)
+
+G00 Z10.000000
+G00 X76.200000 Y94.002800
+
+G01 Z0.000000 F1100.0(Penetrate)
+G01 X76.200000 Y27.289790 Z0.000000 F1200.000000
+G00 Z10.000000
+
+(End cutting path id: path1760)
+
+
+(Start cutting path id: path1768)
+(Change tool to Default tool)
+
+G00 Z10.000000
+G00 X38.038249 Y67.317570
+
+G01 Z0.000000 F1100.0(Penetrate)
+G01 X101.641170 Y67.317570 Z0.000000 F1200.000000
+G00 Z10.000000
+
+(End cutting path id: path1768)
+
+
+(Start cutting path id: path1778)
+(Change tool to Default tool)
+
+G00 Z10.000000
+G00 X63.479410 Y94.002800
+
+G01 Z0.000000 F1100.0(Penetrate)
+G01 X101.641170 Y53.975000 Z0.000000 F1200.000000
+G00 Z10.000000
+
+(End cutting path id: path1778)
+
+
+(Start cutting path id: path1762)
+(Change tool to Default tool)
+
+G00 Z10.000000
+G00 X63.479410 Y94.002800
+
+G01 Z0.000000 F1100.0(Penetrate)
+G01 X63.479410 Y27.289790 Z0.000000 F1200.000000
+G00 Z10.000000
+
+(End cutting path id: path1762)
+
+
+(Start cutting path id: path1784)
+(Change tool to Default tool)
+
+G00 Z10.000000
+G00 X50.758830 Y94.002800
+
+G01 Z0.000000 F1100.0(Penetrate)
+G01 X38.038249 Y80.660220 Z0.000000 F1200.000000
+G00 Z10.000000
+
+(End cutting path id: path1784)
+
+
+(Start cutting path id: path1774)
+(Change tool to Default tool)
+
+G00 Z10.000000
+G00 X38.038249 Y94.002800
+
+G01 Z0.000000 F1100.0(Penetrate)
+G01 X101.641170 Y27.289790 Z0.000000 F1200.000000
+G00 Z10.000000
+
+(End cutting path id: path1774)
+
+
+(Start cutting path id: path1776)
+(Change tool to Default tool)
+
+G00 Z10.000000
+G00 X50.758830 Y94.002800
+
+G01 Z0.000000 F1100.0(Penetrate)
+G01 X101.641170 Y40.632390 Z0.000000 F1200.000000
+G00 Z10.000000
+
+(End cutting path id: path1776)
+
+
+(Start cutting path id: path1764)
+(Change tool to Default tool)
+
+G00 Z10.000000
+G00 X50.758830 Y94.002800
+
+G01 Z0.000000 F1100.0(Penetrate)
+G01 X50.758830 Y27.289790 Z0.000000 F1200.000000
+G00 Z10.000000
+
+(End cutting path id: path1764)
+
+
+(Start cutting path id: path1756)
+(Change tool to Default tool)
+
+G00 Z10.000000
+G00 X38.038249 Y94.002800
+
+G01 Z0.000000 F1100.0(Penetrate)
+G01 X101.641170 Y94.002800 Z0.000000 F1200.000000
+G01 X101.641170 Y27.289790 Z0.000000
+G01 X38.038249 Y27.289790 Z0.000000
+G01 X38.038249 Y94.002800 Z0.000000
+G00 Z10.000000
+
+(End cutting path id: path1756)
+
+; prh - end of generated gcode
+; this is my prh footer
+
+G54     ; change back to default coordinate system

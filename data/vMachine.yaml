@@ -1,0 +1,108 @@
+
+name: "vMachine"
+board: "vMachine Dev Board"
+
+# Parameters must be in a specific order.
+# I believe everything in this file is necessary.
+# The only documentation is the source code itself if you
+# want to find out if, when, where, how, or why to set a paraemter.
+# TODO: I absolultely MUST comment out most of the Machine H file.
+
+idle_time: 250
+step_type: RMT
+dir_delay_microseconds: 1
+pulse_microseconds: 2
+disable_delay_us: 0
+
+homing_init_lock: false
+
+
+axes:
+    number_axis: 3
+    shared_stepper_disable: gpio.14
+        # :low
+        
+    x:
+        steps_per_mm: 50
+        max_rate: 4000
+        acceleration: 200
+        max_travel: 1000
+        soft_limits: true
+        gang0:
+            standard_stepper:
+                direction: gpio.26
+                step: gpio.27
+        homing:
+            cycle: 1
+            seek_rate: 4000
+            feed_rate: 400
+            pulloff: 15
+            
+            # I have to define a "cycle", though my homing method does not use it
+            # It uses the other three values on X and Y.  Z is hard coded to move
+            # to 20 degrees off the surface during my homing.
+            
+            # positive_direction: false
+            # The WebUI is not working properly at this time, or
+            # is built upside down (increasing Y, to me, should be UP)
+            # Been here, done that, needs to be figured out.
+            
+    y:
+        steps_per_mm: 50
+        max_rate: 4000
+        acceleration: 200
+        max_travel: 1000
+        soft_limits: true
+        gang0:
+            standard_stepper:
+                direction: gpio.32
+                step: gpio.33
+        homing:
+            cycle: 1
+            seek_rate: 4000
+            feed_rate: 400
+            pulloff: 15
+            # positive_direction: false 
+    z:
+        steps_per_mm: 10
+        max_rate: 10000
+        acceleration: 1000
+        max_travel: 90
+        soft_limits: true
+        gang0:
+            rc_servo:
+                # cal_min and max are required, the defaults are 0!
+                pwm: gpio.13
+                cal_min: 1.0
+                cal_max: 1.0
+                
+                # Note: Whitespace following (float values), particularly
+                # tab characters, will break the parser.
+        # homing:
+        #     cycle: 1
+        #     feed_rate: 4000
+        #     seek_rate: 1000
+        #     pulloff: 15
+        #     positive_direction: false
+            
+comms:
+    wifi_sta:
+        ssid: THX36
+    wifi_ap:
+        ip_address: "192.168.0.1"
+        ssid: GRBL_ESP32
+
+spi:
+    # ESP32_GRBL makes the assumption that the SDCard uses the
+    # "default" SPI CS pin.  What I am REALLY doing here is
+    # telling it the CS for the SDCard (and using the standard)
+    # defaults for the other pins) but you need to include
+    # all four (or none) pin definitions in this spi yaml section.
+    
+    miso: gpio.19
+    mosi: gpio.23
+    sck: gpio.18
+    cs: gpio.21
+    
+    
+  

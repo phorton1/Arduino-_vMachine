@@ -1,0 +1,260 @@
+#include <grblFile.h>
+
+#define GRBL_SDCARD_CS    GPIO_NUM_21
+
+
+void setup()
+{
+    Serial.begin(115200);
+    Serial.println("\ngrblFileTest setup() started");
+
+    #if 1
+        // Put a volt meter on MISO ... it needs to be 3.3V here!
+        //
+        // The SD card should be inited before any other SPI devices
+        // because it is not a well behaved SPI device until it is inited!
+        // Besides the mandatory pullup (10K) on MISO, it seems to help if
+        // we make sure the other CS pins are driven high (they could have
+        // pullups too). This code forces them high before calling SD.begin(),
+        // but is not appropriate in the grblFileSystem object itself.
+
+        // Serial.println("setting pins high");
+        pinMode(GPIO_NUM_5,OUTPUT);         // TOUCH_CS
+        pinMode(GPIO_NUM_17,OUTPUT);        // TFT_CS
+        // pinMode(GPIO_NUM_19,INPUT_PULLUP);  // MISO
+        digitalWrite(GPIO_NUM_5,1);
+        digitalWrite(GPIO_NUM_17,1);
+        vTaskDelay(250);
+        // Serial.println("continuing");
+    #endif
+
+    if (theFileSystem.begin(GRBL_SDCARD_CS))
+    {
+        doTests();
+    }
+    else
+        gdbg_send("grblFileTest theFileSystem.begin() failed");
+
+    Serial.println("grblFileTest setup() completed");
+    // delay(500);
+    // SD.end();
+}
+
+
+
+void doTests()
+{
+    gdbg_send("\n---- doing tests");
+
+    // pick alternate filenames
+
+    #define test_root           "/sailboats/junk"
+    #define test_rmdir          "/sailboats"
+
+    const char *test_file = "/sailboats/junk/mbeGuias.txt";
+    const char *other_file = "/sailboats/hoody.txt";
+    bool exists = theFileSystem.exists(SD,test_file);
+    if (!exists)
+    {
+        other_file = "/sailboats/junk/mbeGuias.txt";
+        test_file = "/sailboats/hoody.txt";
+    }
+
+    //---------------------------------------------------
+    // test1 - try deleting a directory while someone else is listing a subdirectory
+    //---------------------------------------------------
+
+    grblFile *root = theFileSystem.openFile(SD,test_root);
+    if (root)
+    {
+        gdbg_sendf("\nlisting of %s",root->name());
+        File f = root->openNextFile();
+        while (f)
+        {
+            gdbg_sendf("%  -30s  %d",f.name(),f.size());
+            // in the middle of a directory listing,
+            // try deleting the directory
+            if (!strcmp(f.name(),test_file))
+            {
+                gdbg_sendf("    rmdir %s while it's open",test_rmdir);
+                if (theFileSystem.rmdir(SD,test_rmdir))
+                {
+                    gdbg_sendf("UH-OH ERROR rmdir %s was allowed!",test_rmdir);
+                }
+                else
+                {
+                    gdbg_sendf("    rmdir %s failed (correctly)",test_rmdir);
+                }
+            }
+            f = root->openNextFile();
+        }
+        theFileSystem.close(root);
+    }
+    else
+    {
+        gdbg_send("could not open root directory");
+    }
+
+    //---------------------------------------------------
+    // test2 - try deleting and renaming a file when it is open
+    //---------------------------------------------------
+    // then rename it for real
+
+    gdbg_sendf("\ntest_file(%s)",test_file);
+    grblFile *tfile = theFileSystem.openFile(SD,test_file);
+    if (tfile)
+    {
+        // try to delete the file
+        if (theFileSystem.remove(SD,test_file))
+        {
+            gdbg_sendf("UH-OH ERROR remove %s was allowed!",test_file);
+        }
+        else
+        {
+            gdbg_send("    removing file failed as expected");
+        }
+
+        // try to rename the file
+        if (theFileSystem.rename(SD,test_file,"blah"))
+        {
+            gdbg_sendf("UH-OH ERROR rename %s to blah was allowed!",test_file);
+        }
+        else
+        {
+            gdbg_sendf("    renaming %s to blah failed as expected",test_file);
+        }
+
+        // try to rename some other file to it's name
+        if (theFileSystem.rename(SD,"/sailboats/junk/lv_conf.h",test_file))
+        {
+            gdbg_sendf("UH-OH ERROR rename /sailboats/junk/lv_conf.h to %s!",other_file);
+        }
+        else
+        {
+            gdbg_sendf("    renaming /sailboats/junk/lv_conf.h to %s failed as expected",other_file);
+        }
+
+        theFileSystem.close(tfile);
+    }
+    else
+    {
+        gdbg_sendf("COULD NOT OPEN %s",test_file);
+    }
+
+    // actually rename the file
+
+    if (!theFileSystem.rename(SD,test_file,other_file))
+    {
+        gdbg_sendf("renaming %s to test_file %s unexpectedly",test_file,other_file);
+    }
+
+    // actually remove a directory (it exists)
+
+    if (theFileSystem.exists(SD,"/sailboats/junk - Copy"))
+    {
+        gdbg_send("rmdir /sailboats/junk - Copy");
+        if (theFileSystem.rmdir(SD,"/sailboats/junk - Copy"))
+        {
+            gdbg_send("rmdir /sailboats/junk - Copy returned TRUE");
+        }
+        else
+        {
+            gdbg_send("COULD NOT rmdir /sailboats/junk - Copy");
+        }
+    }
+}
+
+// outside of grbl we implement gdbg_send() and gdbg_sendf()
+
+void gdbg_send(const char* text)
+{
+    Serial.println(text);
+}
+
+
+void gdbg_sendf(const char* format, ...)
+{
+    char    loc_buf[64];
+    char*   temp = loc_buf;
+    va_list arg;
+    va_list copy;
+    va_start(arg, format);
+    va_copy(copy, arg);
+    size_t len = vsnprintf(NULL, 0, format, arg);
+    va_end(copy);
+    if (len >= sizeof(loc_buf))
+    {
+        temp = new char[len + 1];
+        if (temp == NULL)
+        {
+            return;
+        }
+    }
+    len = vsnprintf(temp, len + 1, format, arg);
+    Serial.println(temp);
+    va_end(arg);
+    if (temp != loc_buf)
+    {
+        delete[] temp;
+    }
+}
+
+
+
+void loop()
+{
+    vTaskDelay(10000);
+    #define test_filename "/mbeGuias.txt"
+    grblFile *file = theFileSystem.openFile(SD,test_filename);
+    if (!file)
+        gdbg_sendf("Could not open %s in loop()",test_filename);
+    else
+    {
+        size_t iii = -1;
+        uint32_t jjj = iii;
+
+        gdbg_sendf("%s pos(%d) size(%d) avail(%d) %d %d",
+            test_filename,
+            file->position(),
+            file->size(),
+            file->available(),
+            iii,jjj);
+
+        int c = file->read();
+        if (c == GRBL_FILE_ERROR)
+        {
+            gdbg_sendf("file started with GRBL_FILE_ERROR pos(%d) size(%d) avail(%d)",
+                file->position(),
+                file->size(),
+                file->available());
+
+            c = file->read();
+            gdbg_sendf("addl_read(%d) pos(%d) size(%d) avail(%d)",
+                c,
+                file->position(),
+                file->size(),
+                file->available());
+            c = 0;
+        }
+
+        int retry = 0;
+        while (c >= 0)
+        {
+            c = file->read();
+            if (c == GRBL_FILE_ERROR && retry++ < 20)
+            {
+                gdbg_sendf("retry(%d) pos(%d) size(%d) avail(%d)",
+                    retry,
+                    file->position(),
+                    file->size(),
+                    file->available());
+                file->seek(0,SeekSet);
+                vTaskDelay(1000);
+                c = 0;
+            }
+        }
+        if (c != GRBL_FILE_EOF)
+            gdbg_sendf("file read test(%s) ended with %d",test_filename,c);
+        theFileSystem.close(file);
+    }
+}
