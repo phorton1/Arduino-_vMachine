@@ -50,40 +50,8 @@
 // to be modified to feed out Y when doing X, and vice-versa.  So I had to write my
 // own entire homing method in vMachine.cpp.
 
-
-#define USE_LOW_LEVL_PINS
-	// This define calls lower level core methods (I think).
-	// A simple pinMode/digitalWrite to an LED was not working.
-	// The define fixes the LED problem here in vSensor but does not
-	// address SD Card issues which requires a poke to ESP32_GRBL code.
-	//
-	// In bringing vMachine up on the Yaml_Settings branch. I discovered
-	// that they have overriden the core system pinMode, digitalWrite, and digitalRead
-	// methods, and that their overrides don't generally work with my code or other libraries.
-	// Particularly with the SDCard that DID NOT WORK until I diddled their code.
-	// The "fix" is a commented out section in PinMapper.cpp to get rid of their
-	// override methods so the core methods get called normally.
-	//
-	// analogRead() works because they didn't muck with it.
-
-#ifdef USE_LOW_LEVL_PINS
-	extern "C" void __pinMode(uint8_t pin, uint8_t mode);
-	extern "C" int  __digitalRead(uint8_t pin);
-	extern "C" void __digitalWrite(uint8_t pin, uint8_t val);
-
-	#define usePinMode 			__pinMode
-	#define useDigitalRead  	__digitalRead
-	#define useDigitalWrite 	__digitalWrite
-#else
-	#define usePinMode 			pinMode
-	#define useDigitalRead  	digitalRead
-	#define useDigitalWrite 	digitalWrite
-#endif
-
-
 vSensor x_sensor;
 vSensor y_sensor;
-
 
 
 int getVSensorState()
@@ -111,7 +79,7 @@ void vSensor::init(int axis_num, int pin)
 {
     m_pin = pin;
     m_axis_num = axis_num;
-    usePinMode(m_pin,INPUT);
+    pinMode(m_pin,INPUT);
     memset(m_buf,0,VSENSOR_BUFSIZE * sizeof(int));
 	info_serial("vSensor(%d) started on pin(%d)",axis_num,pin);
 }
@@ -177,8 +145,8 @@ void vSensorTask(void* pvParameters)
     x_sensor.init(0,X_VLIMIT_PIN);
     y_sensor.init(1,Y_VLIMIT_PIN);
 
-	usePinMode(V_LIMIT_LED_PIN,OUTPUT);
-	useDigitalWrite(V_LIMIT_LED_PIN,0);
+	pinMode(V_LIMIT_LED_PIN,OUTPUT);
+	digitalWrite(V_LIMIT_LED_PIN,0);
 
 	// for (int i=0; i<7; i++)
 	// {
@@ -202,7 +170,7 @@ void vSensorTask(void* pvParameters)
         if (led_state != led_on)
         {
             led_state = led_on;
-            useDigitalWrite(V_LIMIT_LED_PIN,led_on);
+            digitalWrite(V_LIMIT_LED_PIN,led_on);
         }
 
         static UBaseType_t uxHighWaterMark = 0;
