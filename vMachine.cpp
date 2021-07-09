@@ -613,12 +613,12 @@ bool vHome(int axis)
 
 	// start initial 'seek' move
 
-	pl_data->feed_rate = fast_rate;   			// Set current homing rate.
+	pl_data->feed_rate = fast_rate;   		// Set current homing rate.
 	plan_buffer_line(target, pl_data);  		// Bypass mc_line(). Directly plan homing motion.
 	sys.step_control = {};
-	sys.step_control.executeSysMotion = true;  // Set to execute homing motion and clear existing flags.
-	st_prep_buffer();                          // Prep and fill segment buffer from newly planned block.
-	st_wake_up();    						   // Initiate motion
+	sys.step_control.executeSysMotion = true;  	// Set to execute homing motion and clear existing flags.
+	Stepper::prep_buffer();                         // Prep and fill segment buffer from newly planned block.
+	Stepper::wake_up();    				// Initiate motion
 
 	// check for limit hit(s)
 	//
@@ -648,7 +648,7 @@ bool vHome(int axis)
 	{
 		// not sure why this is needed
 
-		st_prep_buffer();
+		Stepper::prep_buffer();
 
 		// move volatile state into a local
 
@@ -715,7 +715,7 @@ bool vHome(int axis)
 			if (next_phase)
 			{
 				home_phase++;
-				st_reset();  	    	// Immediately force kill steppers and reset step segment buffer.
+				Stepper::reset();  	    	// Immediately force kill steppers and reset step segment buffer.
 				delay_ms(500);  		// Delay to allow transient dynamics to dissipate.
 					// vTaskDelay(100)
 				other_axis_travel = 0.0;
@@ -770,8 +770,8 @@ bool vHome(int axis)
 					plan_buffer_line(target, pl_data);  		// Bypass mc_line(). Directly plan homing motion.
 					sys.step_control = {};
 					sys.step_control.executeSysMotion = true;  	// Set to execute homing motion and clear existing flags.
-					st_prep_buffer();                          	// Prep and fill segment buffer from newly planned block.
-					st_wake_up();
+					Stepper::prep_buffer();                          	// Prep and fill segment buffer from newly planned block.
+					Stepper::wake_up();
 
 				}	// next_phase <= 3
 			}	// next_phase
