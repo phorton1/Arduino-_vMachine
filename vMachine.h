@@ -11,6 +11,7 @@
 #define Y_VLIMIT_PIN            GPIO_NUM_35     // my code only
 #define V_LIMIT_LED_PIN         GPIO_NUM_22     // my code only
 
+#define V_SDCARD_CS             GPIO_NUM_21
 
 #include <Machine/MachineConfig.h>
 

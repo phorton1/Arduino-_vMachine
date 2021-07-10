@@ -6,14 +6,23 @@
 // I had to modify config.yaml to set the STA/SSID though I can set the
 // password via the serial port.
 
+
+#define INIT_SDCARD_AT_STARTUP   0
+	// this is now invariantly done directly from _vMachine.ino::setup()
+	// for functional reasons
+#define INIT_SDCARD_OLD_FASHIONED_WAY  1
+
+
 #include <Arduino.h>
+	// as opposed to, say, Grbl.h?
 
 #include "vMachine.h"
 #include "vKinematics.h"
 #include "vSensor.h"
 
-#include <SD.h>
-#include <SPI.h>
+#if INIT_SDCARD_AT_STARTUP && INIT_SDCARD_OLD_FASHIONED_WAY
+	#include <SD.h>
+#endif
 
 #include <Grbl.h>
 #include <Config.h>
@@ -119,48 +128,29 @@ static inline unsigned long mulRound(float *vals, int axis)
 }
 
 
-void debug_start_sdcard()
-{
-	#define INIT_SDCARD_AT_STARTUP   1
-		// This is just here for serial initialization debugging.
+
+#if INIT_SDCARD_AT_STARTUP
+	void debug_start_sdcard()
+	{
+		// This was just here for serial initialization debugging.
 		// Otherwise the "normal" grbl_esp32 code does not initialize it
 		// until it is accessed via a [ESPxxx] command from the WebUI or
 		// via [ESP210] or [ESP420].  I modified the webUI to start up
-		// with the file list initialized and my UI code checks for a
-		// card insertion every 2 seconds if one is not present.
-		// REQUIRES 1K PULLUP RESISTOR ON MISO
-
-	#if INIT_SDCARD_AT_STARTUP
-
-		// vTaskDelay(200);
-			// I still had to add a wonky delay here, apparently
-			// to give time for the pullup resistor to work ?!?
+		// with the file list initialized.
+		// REQUIRES PULLUP RESISTOR ON MISO
 
 		// In bringing vMachine up on the Yaml_Settings branch. I discovered
 		// that they have overriden the core system pinMode, digitalWrite, and digitalRead
 		// methods, and that their overrides don't generally work with my code or other libraries.
-		// Particularly with the SDCard that DID NOT WORK until I diddled their code
-		// The "fix" is a commented out section in (their) PinMapper.cpp to get rid of their
-		// override methods so the core methods get called normally.
+		// Particularly with the SDCard that DID NOT WORK until I #ifdef'd out their code
+		// in (their) PinMapper.cpp to get rid of their override methods so the core methods
+		// get called normally.
 
-		#if 0
-			// possibly useful when TFT is hooked up
-			// Serial.println("setting pins high");
-			usePinMode(GPIO_NUM_5,OUTPUT);         // TOUCH_CS
-			usePinMode(GPIO_NUM_17,OUTPUT);        // TFT_CS
-			// usePinMode(GPIO_NUM_19,INPUT_PULLUP);  // MISO
-			useDigitalWrite(GPIO_NUM_5,1);
-			useDigitalWrite(GPIO_NUM_17,1);
-			vTaskDelay(250);
-		#endif
-
-		#if 0
+		#if INIT_SDCARD_OLD_FASHIONED_WAY
 
 			// Call SD.begin() directly.
-			// GRBL_SDCARD_CS must be correctly set
-
-			info_serial("starting SD Card on pin(%d)",GRBL_SDCARD_CS);
-			if (!SD.begin(GRBL_SDCARD_CS))
+			info_serial("starting SD Card on pin(%d)",V_SDCARD_CS);
+			if (!SD.begin(V_SDCARD_CS))
 			{
 				info_serial("SD.begin() failed");
 			}
@@ -201,15 +191,18 @@ void debug_start_sdcard()
 			info_serial("Total space:  %lluMB", (SD.totalBytes()+1024*1024-1) / (1024 * 1024));
 			info_serial("Used space:   %lluMB", (SD.usedBytes()+1024*1024-1) / (1024 * 1024));
 
-			// prh - I am NOT going to close the SD Card here so as to test
-			// the uiDirectory window, but something needs to be done about
+			// Grbl_Esp32 closes the SD Card after every use.
 			// SDCard::State() and it's usage in Grbl for me to proceed in
 			// a sane manner.
 
-			// SD.end();	// as per the GRBL way
+			#if !INIT_SDCARD_OLD_FASHIONED_WAY
+				SD.end();	// as per the GRBL way
+			#endif
 		}
-	#endif
-}
+	}
+
+#endif	// INIT_SDCARD_AT_STARTUP
+
 
 
 void machine_init()
@@ -219,12 +212,15 @@ void machine_init()
 
 	// v_machine.initSettings();
 
-	// my predilection
+	#if INIT_SDCARD_AT_STARTUP
+		debug_start_sdcard();
+	#endif
 
-	debug_start_sdcard();
+	// initialize the kinematics engine
 
-	// start my limit switch task
-	// this really needs to be bound into the mainline grbl code
+	kinematics.init();
+
+	// start the vSensorTask
 
 	xTaskCreate(vSensorTask,
 		"vSensorTask",
@@ -232,17 +228,12 @@ void machine_init()
 		NULL,
 		1,  	// priority
 		NULL);
-	delay(200);
-		// need to figure out why info_send() is not atoomic
+	delay(200);		// to allow task to display it's starup message
 
-	// Continuing my normal startup
-	// initialize the kinematics engine
 
-	kinematics.init();
-
-	//----------------------------------------------------
-	// set system at imaginary position of 200,150,0 to start
-	//----------------------------------------------------
+	//-----------------------------------------------------------------
+	// set system at imaginary center position to start
+	//-----------------------------------------------------------------
 	// These are just imaginary values until we are homed.
 
 	memset(sys_position,0,MAX_N_AXIS * sizeof(unsigned long));
@@ -266,13 +257,6 @@ void machine_init()
 		(float)sys_position[X_AXIS] / STEPS_PER_MM(X_AXIS),
 		(float)sys_position[Y_AXIS] / STEPS_PER_MM(Y_AXIS),
 		(float)sys_position[Z_AXIS] / STEPS_PER_MM(Z_AXIS));
-
-	// magic_after_diddling_sys_position()
-
-	// plan_reset();
-	// gc_init();
-	// gc_sync_position();
-	// plan_sync_position();
 
 	info_serial("vMachine.cpp::machine_init() finished");
 
