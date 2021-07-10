@@ -200,7 +200,13 @@ void debug_start_sdcard()
 			info_serial("SD Card Size: %lluMB", cardSize);
 			info_serial("Total space:  %lluMB", (SD.totalBytes()+1024*1024-1) / (1024 * 1024));
 			info_serial("Used space:   %lluMB", (SD.usedBytes()+1024*1024-1) / (1024 * 1024));
-			SD.end();	// as per the GRBL way
+
+			// prh - I am NOT going to close the SD Card here so as to test
+			// the uiDirectory window, but something needs to be done about
+			// SDCard::State() and it's usage in Grbl for me to proceed in
+			// a sane manner.
+
+			// SD.end();	// as per the GRBL way
 		}
 	#endif
 }
