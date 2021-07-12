@@ -7,7 +7,7 @@
 // password via the serial port.
 
 
-#define INIT_SDCARD_AT_STARTUP   0
+#define INIT_SDCARD_AT_STARTUP   1
 	// this is now invariantly done directly from _vMachine.ino::setup()
 	// for functional reasons
 #define INIT_SDCARD_OLD_FASHIONED_WAY  1
@@ -20,7 +20,7 @@
 #include "vKinematics.h"
 #include "vSensor.h"
 
-#if INIT_SDCARD_AT_STARTUP && INIT_SDCARD_OLD_FASHIONED_WAY
+#if INIT_SDCARD_AT_STARTUP
 	#include <SD.h>
 #endif
 
@@ -154,7 +154,7 @@ static inline unsigned long mulRound(float *vals, int axis)
 			{
 				info_serial("SD.begin() failed");
 			}
-			// else
+			else
 			{
 
 		#else	// relies on vMachine.yaml spi setup
@@ -222,13 +222,16 @@ void machine_init()
 
 	// start the vSensorTask
 
-	xTaskCreate(vSensorTask,
-		"vSensorTask",
-		4096,
-		NULL,
-		1,  	// priority
-		NULL);
-	delay(200);		// to allow task to display it's starup message
+	xTaskCreatePinnedToCore(
+		vSensorTask,		// method
+		"vSensorTask",		// name
+		4096,				// stack_size
+		NULL,				// parameters
+		1,  				// priority
+		NULL,				// returned handle
+		0);					// core 1=main Grbl_Esp32 thread/task, 0=my UI and other tasks
+
+	delay(400);		// to allow task to display it's starup message
 
 
 	//-----------------------------------------------------------------
