@@ -131,7 +131,7 @@ void setup()
     // and away we go ...
 
     grbl_init();
-    info_serial("vMachine.ino setup() completed");
+    info_serial("vMachine.ino setup() completed %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
 
 }   // setup()
 
@@ -139,7 +139,7 @@ void setup()
 
 void loop()
 {
-    info_serial("vMachine.ino loop() started");
+    info_serial("vMachine.ino loop() started %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
     run_once();
-    info_serial("vMachine.ino loop() completed");
+    info_serial("vMachine.ino loop() completed %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
 }

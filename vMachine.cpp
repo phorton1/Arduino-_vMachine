@@ -149,7 +149,7 @@ static inline unsigned long mulRound(float *vals, int axis)
 		#if INIT_SDCARD_OLD_FASHIONED_WAY
 
 			// Call SD.begin() directly.
-			info_serial("starting SD Card on pin(%d)",V_SDCARD_CS);
+			info_serial("starting SD Card on pin(%d) %d/%dK",V_SDCARD_CS,xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
 			if (!SD.begin(V_SDCARD_CS))
 			{
 				info_serial("SD.begin() failed");
@@ -208,7 +208,12 @@ static inline unsigned long mulRound(float *vals, int axis)
 void machine_init()
 	// override weakly bound method called from Grbl.cpp
 {
-	info_serial("vMachine.cpp::machine_init() on core %d at priority %d",xPortGetCoreID(),uxTaskPriorityGet(NULL));
+	info_serial("vMachine.cpp::machine_init() on core %d at priority %d %d/%dK",
+		xPortGetCoreID(),
+		uxTaskPriorityGet(NULL),
+		xPortGetFreeHeapSize()/1024,
+		xPortGetMinimumEverFreeHeapSize()/1024);
+
 
 	// v_machine.initSettings();
 
@@ -261,7 +266,7 @@ void machine_init()
 		(float)sys_position[Y_AXIS] / STEPS_PER_MM(Y_AXIS),
 		(float)sys_position[Z_AXIS] / STEPS_PER_MM(Z_AXIS));
 
-	info_serial("vMachine.cpp::machine_init() finished");
+	info_serial("vMachine.cpp::machine_init() finished %d/%dK",V_SDCARD_CS,xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
 
 }
 
