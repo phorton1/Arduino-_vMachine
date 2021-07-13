@@ -1,16 +1,9 @@
 // vMachine - my minimalist port of maslow kinematics to the GRBL_ESP32 code base
 
 // prh - notes on bringing up to YAML_SETTINGS branch
-//
 // When you first boot GRBL_ESP32 there is no config.yaml on the SPIFFS
 // I had to modify config.yaml to set the STA/SSID though I can set the
 // password via the serial port.
-
-
-#define INIT_SDCARD_AT_STARTUP   1
-	// this is now invariantly done directly from _vMachine.ino::setup()
-	// for functional reasons
-#define INIT_SDCARD_OLD_FASHIONED_WAY  1
 
 
 #include <Arduino.h>
@@ -19,10 +12,6 @@
 #include "vMachine.h"
 #include "vKinematics.h"
 #include "vSensor.h"
-
-#if INIT_SDCARD_AT_STARTUP
-	#include <SD.h>
-#endif
 
 #include <Grbl.h>
 #include <Config.h>
@@ -34,87 +23,28 @@
 #include <MotionControl.h>
 #include <GLimits.h>
 
-
-#define STEPS_PER_MM(axis)		(config->_axes->_axis[axis]->_stepsPerMm)
-
-vMachine v_machine;
-
-
-//-------------------------------------------
-// COORDINATE SYSTEMS
-//-------------------------------------------
-// sys_position = an array of int32s representing the stepper motor position in steps
-// motor position = floats in mm's == sys_position / axis_settings->steps_per_mm
-// machine position = floats called "mpos" which is the cartesian coordinate within the work area,
-// work position =  grbl floats (wpos) that lets you set 0,0 relative to the machine area.
-//
-// The "motor position" and sys_position are representative of the chain (cable) lengths.
-//
-// The system does not maintain the motor, machine, or work positions.
-// It only maintains the int32 sys_positions.
-//
-// If GRBL needs to do something in the machine/work coordinate systems (i.e. move to the
-// next point in some gcode) it calls cartesianToMotors() to get the "motor positions"
-// for that coordinate, which it then turns back into sys_position steps for planning
-// and actual movement.
-//
-// For reporting, sys_position ==> motor position is turned into the "machine position" by
-// calling motors_to_cartesian() (forward kinematics), which in turn, does
-// iterative calls to the reverse kinematics to find a "machine_position" that matches
-// the motor position.  These forward kinematics are normally not needed to run GRBL,
-// they are used only for reporting.
-
-//-------------------------------------------
-// HOMING AND ZERO STOPS
-//-------------------------------------------
-// #define ZERO_LENGTH  223.959     // mm. just about 224
-//    sqrt(MOTOR_OFFSET_Y*MOTOR_OFFSET_Y + MOTOR_OFFSET_X*MOTOR_OFFSET_Y))
-//         the length of the hypotenuse of the right trangle
-//         from motor center points to the top left/right corners
-//         of the machine area
-//
-// The forward edge of the "zero stop" white lines are painted on the
-// belt 21.4 mm from the center of the sled.  This is 10mm "in" from the pully
-// when the sled is at zero cable length. The stop will get not get
-// triggered util the cable length is logically -10 (minus ten)
-// millimeters (AFTER it passes zero) while reeling in the belt
-// during homing.
-//
-// #define LEFT_ZERO_OFFSET    -10.000     // mm == -500 steps
-// #define RIGHT_ZERO_OFFSET   -10.000
-// 	// candidates for preferences
-//
-// These allow for an approximately 7mm horizontal and vertial
-// "safe" zone around the machine area that the system can still
-// navigate in and ensures that the end stops are not triggered
-// within the work area.
-
-// TBD: The "max" stops are also painted in such a way as to allow a bit
-// more than the maximum length, but it is the zero stops that are
-// important in homing and all subsquent calculations and the overall
-// accuracy of the machine.
-
-// We cannot o use the $XY/Home/MPos existing config EEPROM space
-// to store these as preferences as that has a different semantic.
-
-// Modifying the above constants is possible to account for the fact
-// that the sensors may trigger sooner or later (not exactly on the edge)
-// by doing a Homing cycle and, after the "pull off" (15 mm in our case)
-// one could measure the distance from the white line to TDC of the pulley
-// and adjusting the constants until it is actually 15mm from TDC after
-// the pulloff.
-
-
-// debugging the inverse kinematics may introduce
-// timing problems that can crash the machine ...
+#define WITH_MEMORY_PROBE 1
 
 #define DEBUG_VHOME   	2		// can be up to 2
 #define DEBUG_VREVERSE  0
 #define DEBUG_VFORWARD  0		// can be up to 2
+	// debugging the inverse kinematics may introduce
+	// timing problems that can crash the machine ..
+
+#define INIT_SDCARD_AT_STARTUP   1
+#define INIT_SDCARD_OLD_FASHIONED_WAY  1
+
+#if INIT_SDCARD_AT_STARTUP
+	#include <SD.h>
+#endif
 
 
+#define STEPS_PER_MM(axis)		(config->_axes->_axis[axis]->_stepsPerMm)
+
+vMachine v_machine;
 Kinematics	kinematics;
 bool in_homing = false;
+
 
 
 static inline unsigned long mulRound(float *vals, int axis)
@@ -132,11 +62,11 @@ static inline unsigned long mulRound(float *vals, int axis)
 #if INIT_SDCARD_AT_STARTUP
 	void debug_start_sdcard()
 	{
-		// This was just here for serial initialization debugging.
-		// Otherwise the "normal" grbl_esp32 code does not initialize it
+		// The "normal" grbl_esp32 code does not initialize the SD Card
 		// until it is accessed via a [ESPxxx] command from the WebUI or
 		// via [ESP210] or [ESP420].  I modified the webUI to start up
 		// with the file list initialized.
+
 		// REQUIRES PULLUP RESISTOR ON MISO
 
 		// In bringing vMachine up on the Yaml_Settings branch. I discovered
@@ -200,9 +130,25 @@ static inline unsigned long mulRound(float *vals, int axis)
 			#endif
 		}
 	}
-
 #endif	// INIT_SDCARD_AT_STARTUP
 
+
+#if WITH_MEMORY_PROBE
+    // memory check
+	void vMemoryProbeTask(void* pvParameters)
+		// this method maybe should use a global "v_in_homing" boolean,
+		// and if not, do the "panic" mc_reset() and set an alarm if a
+		// limit is hit.  If not, it shold just keep trucking ...
+	{
+		info_serial("vMemoryProbeTask running on core %d at priority %d",xPortGetCoreID(),uxTaskPriorityGet(NULL));
+
+		while (true)
+		{
+			vTaskDelay(15000 / portTICK_PERIOD_MS);
+			debug_serial("mem[ %d secs] %d/%dK",millis()/1000,xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
+		}
+    }
+#endif
 
 
 void machine_init()
@@ -213,9 +159,6 @@ void machine_init()
 		uxTaskPriorityGet(NULL),
 		xPortGetFreeHeapSize()/1024,
 		xPortGetMinimumEverFreeHeapSize()/1024);
-
-
-	// v_machine.initSettings();
 
 	#if INIT_SDCARD_AT_STARTUP
 		debug_start_sdcard();
@@ -266,8 +209,18 @@ void machine_init()
 		(float)sys_position[Y_AXIS] / STEPS_PER_MM(Y_AXIS),
 		(float)sys_position[Z_AXIS] / STEPS_PER_MM(Z_AXIS));
 
-	info_serial("vMachine.cpp::machine_init() finished %d/%dK",V_SDCARD_CS,xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
+	#if WITH_MEMORY_PROBE
+		xTaskCreatePinnedToCore(
+			vMemoryProbeTask,		// method
+			"vMemoryProbeTask",		// name
+			4096,				// stack_size
+			NULL,				// parameters
+			1,  				// priority
+			NULL,				// returned handle
+			0);					// core 1=main Grbl_Esp32 thread/task, 0=my UI and other tasks
+	#endif
 
+	info_serial("vMachine.cpp::machine_init() finished %d/%dK",V_SDCARD_CS,xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
 }
 
 

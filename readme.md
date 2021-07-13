@@ -371,6 +371,73 @@ And can either switch to the G55 coordinate system manually,
 or via the header/footer in inkscape
 
 
+## COORDINATE SYSTEMS DETAILS
+
+sys_position = an array of int32s representing the stepper motor position in steps
+motor position = floats in mm's == sys_position / axis_settings->steps_per_mm
+machine position = floats called "mpos" which is the cartesian coordinate within the work area,
+work position =  grbl floats (wpos) that lets you set 0,0 relative to the machine area.
+
+The "motor position" and sys_position are representative of the chain (cable) lengths.
+
+The system does not maintain the motor, machine, or work positions.
+It only maintains the int32 sys_positions.
+
+If GRBL needs to do something in the machine/work coordinate systems (i.e. move to the
+next point in some gcode) it calls cartesianToMotors() to get the "motor positions"
+for that coordinate, which it then turns back into sys_position steps for planning
+and actual movement.
+
+For reporting, sys_position ==> motor position is turned into the "machine position" by
+calling motors_to_cartesian() (forward kinematics), which in turn, does
+iterative calls to the reverse kinematics to find a "machine_position" that matches
+the motor position.  These forward kinematics are normally not needed to run GRBL,
+they are used only for reporting.
+
+
+## HOMING AND ZERO STOPS
+
+```
+#define ZERO_LENGTH  223.959     // mm. just about 224
+   sqrt(MOTOR_OFFSET_Y*MOTOR_OFFSET_Y + MOTOR_OFFSET_X*MOTOR_OFFSET_Y))
+        the length of the hypotenuse of the right trangle
+        from motor center points to the top left/right corners
+        of the machine area
+```
+
+The forward edge of the "zero stop" white lines are painted on the
+belt 21.4 mm from the center of the sled.  This is 10mm "in" from the pully
+when the sled is at zero cable length. The stop will get not get
+triggered util the cable length is logically -10 (minus ten)
+millimeters (AFTER it passes zero) while reeling in the belt
+during homing.
+
+```
+#define LEFT_ZERO_OFFSET    -10.000     // mm == -500 steps
+#define RIGHT_ZERO_OFFSET   -10.000
+```
+
+These allow for an approximately 7mm horizontal and vertial
+"safe" zone around the machine area that the system can still
+navigate in and ensures that the end stops are not triggered
+within the work area.
+
+TBD: The "max" stops are also painted in such a way as to allow a bit
+more than the maximum length, but it is the zero stops that are
+important in homing and all subsquent calculations and the overall
+accuracy of the machine.
+
+We cannot o use the $XY/Home/MPos existing config EEPROM space
+to store these as preferences as that has a different semantic.
+
+Modifying the above constants is possible to account for the fact
+that the sensors may trigger sooner or later (not exactly on the edge)
+by doing a Homing cycle and, after the "pull off" (15 mm in our case)
+one could measure the distance from the white line to TDC of the pulley
+and adjusting the constants until it is actually 15mm from TDC after
+the pulloff.
+
+
 ## RC_SERVO
 
 ### Top Level Notes
