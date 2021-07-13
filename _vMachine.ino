@@ -3,9 +3,10 @@
 //----------------------------------------------------
 // A v-type CNC machine based on the Grbl_Esp32 library.
 
+#include <Grbl.h>           // for grbl_init() and run_once()
 #include <Config.h>         // for ENABLE_TOUCH_UI
 #include <Report.h>         // for debug_serial()
-#include "vMachine.h"       // for V_SDCARD_CS (must come after Grbl.h?? or Arduino.h??)
+#include "vMachine.h"       // for V_SDCARD_CS (must come after Grbl.h
 
 // for the moment, ENABLE_TOUCH_UI is defined in Grbl_Esp32/Config.h
 // which creates CLIENT_TOUCH_UI and which allows a client
