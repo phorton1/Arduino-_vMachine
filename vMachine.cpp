@@ -140,12 +140,14 @@ static inline unsigned long mulRound(float *vals, int axis)
 		// and if not, do the "panic" mc_reset() and set an alarm if a
 		// limit is hit.  If not, it shold just keep trucking ...
 	{
+		vTaskDelay(200/portTICK_PERIOD_MS);
+
 		info_serial("vMemoryProbeTask running on core %d at priority %d",xPortGetCoreID(),uxTaskPriorityGet(NULL));
 
 		while (true)
 		{
-			vTaskDelay(15000 / portTICK_PERIOD_MS);
 			debug_serial("mem[ %d secs] %d/%dK",millis()/1000,xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
+			vTaskDelay(15000 / portTICK_PERIOD_MS);
 		}
     }
 #endif
