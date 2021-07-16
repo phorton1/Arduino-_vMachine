@@ -13,15 +13,32 @@
 // to poll the output using their own "extern WebUI::InputBuffer touch_ui_out"
 
 #ifdef ENABLE_TOUCH_UI
-    #if 1
-        #include <grblTouchUI.h>
+
+    // You can choose between, none, two different UI libraries
+    //   0 == NO LIBRARY (to test memory without linking library)
+    //   1 == grbl_TouchUI (based on LVGL, uses dynamic memory)
+    //   2 == grbl_MinUI (direct to TFT_eSPI, little or no dynamic memory used)
+
+    #define USE_WHICH_UI_LIBRARY   2
+
+    #if USE_WHICH_UI_LIBRARY
+        #if USE_WHICH_UI_LIBRARY==2
+            #include <Grbl_MinUI.h>
+        #else
+            #include <Grbl_TouchUI.h>
+        #endif
+
         void display_init()
             // override weak definition in Grbl_Esp32
             // called after the Serial port Client has been created
         {
-            info_serial("vMachine.ino display_init() started");
-            touchUI_init();     // initialize the touchUI
-            info_serial("vMachine.ino display_init() finished");
+            debug_serial("vMachine.ino display_init() started");
+            #if USE_WHICH_UI_LIBRARY==2
+                Grbl_MinUI_init();
+            #else
+                Grbl_TouchUI_init();
+            #endif
+            debug_serial("vMachine.ino display_init() finished");
         }
     #endif
 #endif
@@ -32,14 +49,14 @@ void setup()
 {
     delay(2000);
     grbl_init();
-    info_serial("vMachine.ino setup() completed %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
+    debug_serial("vMachine.ino setup() completed %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
 }
 
 
 
 void loop()
 {
-    info_serial("vMachine.ino loop() started %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
+    debug_serial("vMachine.ino loop() started %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
     run_once();
-    info_serial("vMachine.ino loop() completed %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
+    debug_serial("vMachine.ino loop() completed %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
 }
