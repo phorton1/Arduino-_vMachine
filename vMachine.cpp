@@ -32,7 +32,7 @@
 	// timing problems that can crash the machine ..
 
 #define INIT_SDCARD_AT_STARTUP   1
-#define INIT_SDCARD_OLD_FASHIONED_WAY  1
+#define INIT_SDCARD_OLD_FASHIONED_WAY  0
 
 #if INIT_SDCARD_AT_STARTUP
 	#include <SD.h>
