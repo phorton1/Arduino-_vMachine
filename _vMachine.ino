@@ -19,27 +19,22 @@
     //   1 == grbl_TouchUI (based on LVGL, uses dynamic memory)
     //   2 == grbl_MinUI (direct to TFT_eSPI, little or no dynamic memory used)
 
-    #define USE_WHICH_UI_LIBRARY   2
+    #define WITH_UI
 
-    #if USE_WHICH_UI_LIBRARY
-        #if USE_WHICH_UI_LIBRARY==2
-            #include <Grbl_MinUI.h>
-        #else
-            #include <Grbl_TouchUI.h>
-        #endif
+    #ifdef WITH_UI
+
+        #include <Grbl_MinUI.h>
 
         void display_init()
             // override weak definition in Grbl_Esp32
             // called after the Serial port Client has been created
         {
             debug_serial("vMachine.ino display_init() started");
-            #if USE_WHICH_UI_LIBRARY==2
-                Grbl_MinUI_init();
-            #else
-                Grbl_TouchUI_init();
-            #endif
+            Grbl_MinUI_init();
+
             debug_serial("vMachine.ino display_init() finished");
         }
+
     #endif
 #endif
 
