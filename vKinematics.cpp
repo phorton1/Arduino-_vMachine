@@ -396,12 +396,12 @@ void  Kinematics::forward(
 
     if (chainALength + chainBLength < dist_between_motors)
     {
-        if (!in_homing)
-            info_serial(
-                "sum of chainLengths(%f,%f) less than (%f) - the chains do not interssect!!",
-                chainALength,
-                chainBLength,
-                dist_between_motors);
+        // if (!in_homing)
+        //     info_serial(
+        //         "sum of chainLengths(%f,%f) less than (%f) - the chains do not interssect!!",
+        //         chainALength,
+        //         chainBLength,
+        //         dist_between_motors);
         *xPos = 0;
         *yPos = 0;
         return;
