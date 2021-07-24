@@ -313,7 +313,7 @@ bool cartesian_to_motors(float* target, plan_line_data_t* pl_data, float* positi
 
 	// pl_data->feed_rate = 2000;
 
-	if (0 && !pl_data->motion.rapidMotion && (xdist!=0 || ydist!=0))
+	if (!pl_data->motion.rapidMotion && (xdist!=0 || ydist!=0))
 	{
 		float dist = sqrt(xdist*xdist + ydist*ydist + zdist*zdist);
 		float line_seg_len = v_machine.getLineSegmentLength();
