@@ -12,6 +12,8 @@
 #include "vMachine.h"
 #include "vKinematics.h"
 #include "vSensor.h"
+#include "v2812b.h"
+
 
 #include <Grbl.h>
 #include <Config.h>
@@ -45,7 +47,9 @@ vMachine v_machine;
 Kinematics	kinematics;
 bool in_homing = false;
 
-
+#ifdef WITH_V2812B
+	Adafruit_NeoPixel pixels(NUM_PIXELS,V_LIMIT_LED_PIN);
+#endif  // WITH_V2812B
 
 static inline unsigned long mulRound(float *vals, int axis)
 	// change "motor position" (chain lengths) mm's to steps
@@ -165,6 +169,10 @@ void machine_init()
 	#if INIT_SDCARD_AT_STARTUP
 		debug_start_sdcard();
 	#endif
+
+	#ifdef WITH_2812B
+		pixels.begin();
+	#endif  // WITH_2812B
 
 	// initialize the kinematics engine
 

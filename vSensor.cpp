@@ -1,11 +1,12 @@
 
 #include "vSensor.h"
 #include "vMachine.h"
+#include "v2812b.h"
 #include <Report.h>
+
 
 #define DEBUG_SENSOR  0
 
-// prh Todo - separate LEDs for left and right limit switches
 // prh Todo - paint outside stops (already used in homing)
 // prh Someday - use sensors for hard stops
 
@@ -145,8 +146,10 @@ void vSensorTask(void* pvParameters)
     x_sensor.init(0,X_VLIMIT_PIN);
     y_sensor.init(1,Y_VLIMIT_PIN);
 
-	pinMode(V_LIMIT_LED_PIN,OUTPUT);
-	digitalWrite(V_LIMIT_LED_PIN,0);
+	#ifndef WITH_V2812B
+		pinMode(V_LIMIT_LED_PIN,OUTPUT);
+		digitalWrite(V_LIMIT_LED_PIN,0);
+	#endif
 
 	// for (int i=0; i<7; i++)
 	// {
@@ -170,7 +173,16 @@ void vSensorTask(void* pvParameters)
         if (led_state != led_on)
         {
             led_state = led_on;
-            digitalWrite(V_LIMIT_LED_PIN,led_on);
+			#ifdef WITH_V2812B
+				#if DEBUG_SENSOR
+					debug_serial("setting pixels x=%d y=%d",x,y);
+				#endif
+				pixels.setPixelColor(PIXEL_LEFT_SENSOR, x ? 0xFF0000 : 0);
+				pixels.setPixelColor(PIXEL_RIGHT_SENSOR, y ? 0xFF0000 : 0);
+				pixels.show();
+			#else
+				digitalWrite(V_LIMIT_LED_PIN,led_on);
+			#endif
         }
 
         static UBaseType_t uxHighWaterMark = 0;
