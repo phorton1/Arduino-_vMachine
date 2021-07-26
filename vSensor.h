@@ -1,5 +1,8 @@
 #pragma once
 
+#include "vMachine.h"
+#if WITH_VMACHINE
+
 // Class and methods for my Infrared "Stop Switches" that
 // work with painted white lines on a black 5mm GT2 belt.
 
@@ -53,3 +56,5 @@ class vSensor
 extern int getVSensorState();
 
 void vSensorTask(void* pvParameters);
+
+#endif  // WITH_VMACHINE

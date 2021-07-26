@@ -19,7 +19,9 @@
 
 
 #include "vKinematics.h"
-#include "vMachine.h"
+
+#if WITH_VMACHINE
+
 #include <Report.h>
 
 #define DEBUG_INVERSE  0
@@ -108,7 +110,7 @@ Kinematics::Kinematics()
 
 void Kinematics::init()
 {
-    info_serial("Kinematics::init()");
+    v_info("Kinematics::init()");
 
     // used in triangle calcs
 
@@ -191,7 +193,7 @@ void Kinematics::inverse(
     #if DEBUG_INVERSE
         if (!suppress_inverse_debugging)
         {
-            debug_serial("inverse   start target(%f,%f)",
+            v_debug("inverse   start target(%f,%f)",
                 xTarget,
                 yTarget);
         }
@@ -208,7 +210,7 @@ void Kinematics::inverse(
     #if DEBUG_INVERSE
         if (!suppress_inverse_debugging)
         {
-            debug_serial("  inverse offset target(%f,%f)",
+            v_debug("  inverse offset target(%f,%f)",
                 xTarget,
                 yTarget);
         }
@@ -254,7 +256,7 @@ void Kinematics::inverse(
     #if DEBUG_INVERSE
         if (!suppress_inverse_debugging)
         {
-            debug_serial("  inverse distance(%f,%f) angle(%f,%f) around(%f,%f)",
+            v_debug("  inverse distance(%f,%f) angle(%f,%f) around(%f,%f)",
                 Motor1Distance,
                 Motor2Distance,
                 Chain1Angle,
@@ -294,7 +296,7 @@ void Kinematics::inverse(
         #if DEBUG_INVERSE
             if (!suppress_inverse_debugging)
             {
-                debug_serial("  inverse straight(%f,%f) += sag(%f,%f)",
+                v_debug("  inverse straight(%f,%f) += sag(%f,%f)",
                     Chain1Straight,
                     Chain2Straight,
                     Chain1Sag,
@@ -311,7 +313,7 @@ void Kinematics::inverse(
         #if DEBUG_INVERSE
             if (!suppress_inverse_debugging)
             {
-                debug_serial("  inverse straight(%f,%f) /= tolerance_factor(%f,%f)",
+                v_debug("  inverse straight(%f,%f) /= tolerance_factor(%f,%f)",
                     Chain1Straight,
                     Chain2Straight,
                     leftToleranceFactor,
@@ -325,7 +327,7 @@ void Kinematics::inverse(
         #if DEBUG_INVERSE
             if (!suppress_inverse_debugging)
             {
-                debug_serial("  inverse straight(%f,%f) -= rotation_disk_radius(%f)",
+                v_debug("  inverse straight(%f,%f) -= rotation_disk_radius(%f)",
                     Chain1Straight,
                     Chain2Straight,
                     v_machine.getSledRadius());
@@ -341,7 +343,7 @@ void Kinematics::inverse(
     #if DEBUG_INVERSE
         if (!suppress_inverse_debugging)
         {
-            debug_serial("  inverse chain = straight(%f,%f) + aroundSprocket(%f,%f)",
+            v_debug("  inverse chain = straight(%f,%f) + aroundSprocket(%f,%f)",
                 Chain1Straight,
                 Chain2Straight,
                 Chain1AroundSprocket,
@@ -357,7 +359,7 @@ void Kinematics::inverse(
     #if DEBUG_INVERSE
         if (!suppress_inverse_debugging)
         {
-            debug_serial("inverse  finish target(%f,%f) final(%f,%f)]",
+            v_debug("inverse  finish target(%f,%f) final(%f,%f)]",
                 xTarget + halfWidth,
                 yTarget + halfHeight,
                 Chain1,
@@ -386,7 +388,7 @@ void  Kinematics::forward(
 {
     #if DEBUG_FORWARD
         if (prh_debug_forward)
-            debug_serial("forward   start lengths(%f,%f)",
+            v_debug("forward   start lengths(%f,%f)",
                 chainALength,
                 chainBLength);
     #endif
@@ -397,7 +399,7 @@ void  Kinematics::forward(
     if (chainALength + chainBLength < dist_between_motors)
     {
         // if (!in_homing)
-        //     info_serial(
+        //     v_info(
         //         "sum of chainLengths(%f,%f) less than (%f) - the chains do not interssect!!",
         //         chainALength,
         //         chainBLength,
@@ -445,7 +447,7 @@ void  Kinematics::forward(
 
     #if DEBUG_FORWARD > 1
         if (prh_debug_forward)
-            debug_serial("   forward guess intersection xy(%f,%f)",
+            v_debug("   forward guess intersection xy(%f,%f)",
                 xGuess,
                 yGuess);
     #endif
@@ -465,7 +467,7 @@ void  Kinematics::forward(
 
     #if DEBUG_FORWARD > 1
         if (prh_debug_forward)
-            debug_serial("   forward guess offset xy(%f,%f)",
+            v_debug("   forward guess offset xy(%f,%f)",
                 xGuess,
                 yGuess);
     #endif
@@ -516,7 +518,7 @@ void  Kinematics::forward(
 
     #if DEBUG_FORWARD > 1
         if (prh_debug_forward)
-            debug_serial("   forward guess distance(%f,%f) angle(%f,%f) over(%f,%f) hyp(%f,%f)",
+            v_debug("   forward guess distance(%f,%f) angle(%f,%f) over(%f,%f) hyp(%f,%f)",
                 Motor1Distance,
                 Motor2Distance,
                 Chain1Angle,
@@ -541,7 +543,7 @@ void  Kinematics::forward(
 
     #if DEBUG_FORWARD > 1
         if (prh_debug_forward)
-            debug_serial("   forward guess final xy(%f,%f) from straight(%f,%f)",
+            v_debug("   forward guess final xy(%f,%f) from straight(%f,%f)",
                 xGuess,
                 yGuess,
                 straightA,
@@ -595,7 +597,7 @@ void  Kinematics::forward(
 
         #if DEBUG_FORWARD > 2
             if (prh_debug_forward)
-                debug_serial("   forward(%d) guess_xy(%f,%f) lenAB(%f,%f) err(%f,%f)]",
+                v_debug("   forward(%d) guess_xy(%f,%f) lenAB(%f,%f) err(%f,%f)]",
                     guessCount,
                     xGuess,
                     yGuess,
@@ -619,7 +621,7 @@ void  Kinematics::forward(
                 guessLengthB > max_guess_chain_length)
             {
                 if (!in_homing)
-                    info_serial("forward count:%d chainLength(%f,%f) guessLength(%f,%f) returning(%f,%f) Unable to find valid machine position for chain lengths",
+                    v_info("forward count:%d chainLength(%f,%f) guessLength(%f,%f) returning(%f,%f) Unable to find valid machine position for chain lengths",
                         guessCount,
                         chainALength,
                         chainBLength,
@@ -633,7 +635,7 @@ void  Kinematics::forward(
             {
                 #if DEBUG_FORWARD
                     if (prh_debug_forward)
-                        debug_serial("forward final(%f,%f)] guesses(%d)",
+                        v_debug("forward final(%f,%f)] guesses(%d)",
                            xGuess,
                            yGuess,
                            guessCount);
@@ -911,3 +913,4 @@ void  Kinematics::forward(
     }
 
 #endif  // WITH_QUAD_KINEMATICS
+#endif  // WITH_VMACHINE

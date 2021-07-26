@@ -5,6 +5,9 @@
 
 #pragma once
 
+#include "vMachine.h"       // for V_SDCARD_CS (must come after Grbl.h
+#if WITH_VMACHINE
+
 #define WITH_V2812B
 
 #ifdef WITH_V2812B
@@ -21,3 +24,4 @@
 extern Adafruit_NeoPixel pixels;
 
 #endif  // WITH_V2812B
+#endif  // WITH_VMACHINE

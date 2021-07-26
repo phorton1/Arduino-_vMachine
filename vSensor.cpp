@@ -1,6 +1,8 @@
 
 #include "vSensor.h"
-#include "vMachine.h"
+
+#if WITH_VMACHINE
+
 #include "v2812b.h"
 #include <Report.h>
 
@@ -82,7 +84,7 @@ void vSensor::init(int axis_num, int pin)
     m_axis_num = axis_num;
     pinMode(m_pin,INPUT);
     memset(m_buf,0,VSENSOR_BUFSIZE * sizeof(int));
-	info_serial("vSensor(%d) started on pin(%d)",axis_num,pin);
+	v_info("vSensor(%d) started on pin(%d)",axis_num,pin);
 }
 
 
@@ -100,7 +102,7 @@ bool vSensor::pollState()
     // poll so-as to preserve timing.
 {
     int value = analogRead(m_pin);
-    // debug_serial("vSensor[%s] %d]\r\n",m_axis_num ? "Y" : "X",value);
+    // v_debug("vSensor[%s] %d]\r\n",m_axis_num ? "Y" : "X",value);
 
     m_value += value;
     m_value -= m_buf[m_ptr];
@@ -156,10 +158,10 @@ void vSensorTask(void* pvParameters)
 	// 	delay(2000);
 	// 	bool on = i & 1;
 	// 	useDigitalWrite(V_LIMIT_LED_PIN,on);
-	// 	info_serial("led %d",on);
+	// 	v_info("led %d",on);
 	// }
 
-	info_serial("vSensorTask running on core %d at priority %d",xPortGetCoreID(),uxTaskPriorityGet(NULL));
+	v_info("vSensorTask running on core %d at priority %d",xPortGetCoreID(),uxTaskPriorityGet(NULL));
 
     while (true)
     {
@@ -175,7 +177,7 @@ void vSensorTask(void* pvParameters)
             led_state = led_on;
 			#ifdef WITH_V2812B
 				#if DEBUG_SENSOR
-					debug_serial("setting pixels x=%d y=%d",x,y);
+					v_debug("setting pixels x=%d y=%d",x,y);
 				#endif
 				pixels.setPixelColor(PIXEL_LEFT_SENSOR, x ? 0xFF0000 : 0);
 				pixels.setPixelColor(PIXEL_RIGHT_SENSOR, y ? 0xFF0000 : 0);
@@ -191,3 +193,6 @@ void vSensorTask(void* pvParameters)
 #endif
     }
 }
+
+
+#endif	// WITH_VMACHINE

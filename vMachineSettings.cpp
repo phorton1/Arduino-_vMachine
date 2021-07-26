@@ -2,6 +2,9 @@
 
 
 #include "vMachine.h"
+
+#if WITH_VMACHINE
+
 #include <Report.h>
 
 
@@ -122,7 +125,7 @@ void vMachine::group(Configuration::HandlerBase& handler) // override
 void vMachine::initSettings()
 	// override weakly bound method called from Grbl.cpp
 {
-	// info_serial("vMachine::initSettings()");
+	// v_info("vMachine::initSettings()");
 	// called from static ctor - bad idea to use Serial output
 
 	v_machine_width				= VMACHINE_DEFAULT_MACHINE_WIDTH;
@@ -146,24 +149,26 @@ void vMachine::initSettings()
 
 	// called from static ctor - bad idea to use Serial output
 	// 	#if 0
-	//  	debug_serial("v_machine_width         = %-0.3f",getMachineWidth());
-	//  	debug_serial("v_machine_height        = %-0.3f",getMachineHeight());
-	//  	debug_serial("v_dist_between_motors   = %-0.3f",getDistBetweenMotors());
-	//  	debug_serial("v_motor_offset_x        = %-0.3f",getMotorOffsetX());
-	//  	debug_serial("v_motor_offset_y        = %-0.3f",getMotorOffsetY());
-	//  	debug_serial("v_sprocket_radius       = %-0.3f",getSprocketRadius());
-	//  	debug_serial("v_chain_left_tolerance  = %-0.3f",getChainLeftTolerance());
-	//  	debug_serial("v_chain_right_tolerance = %-0.3f",getChainRightTolerance());
-	//  	debug_serial("v_sag_correction        = %-0.3f",getSagCorrection());
-	//  	debug_serial("v_sled_radius           = %-0.3f",getSledRadius());
-	//  	debug_serial("v_forward_guess_tol     = %-0.3f",getForwardGuessTolerance());
-	//  	debug_serial("v_max_forward_guesses   = %d",	getMaxForwardGuesses());
-	//  	debug_serial("v_guess_max_chain_len   = %-0.3f",getGuessMaxChainLength());
-	//  	debug_serial("v_zero_length           = %-0.3f",getZeroLength());
-	//  	debug_serial("v_left_zero_offset      = %-0.3f",getLeftZeroOffset());
-	//  	debug_serial("v_right_zero_offset     = %-0.3f",getRightZeroOffset());
-	//  	debug_serial("v_safe_area_offset      = %-0.3f",getSafeAreaOffset());
-	//  	debug_serial("v_zaxis_safe_position   = %-0.3f",getZAxisSafePosition());
-	//  	debug_serial("v_line_segment_length   = %-0.3f",getLineSegmentLength());
+	//  	v_debug("v_machine_width         = %-0.3f",getMachineWidth());
+	//  	v_debug("v_machine_height        = %-0.3f",getMachineHeight());
+	//  	v_debug("v_dist_between_motors   = %-0.3f",getDistBetweenMotors());
+	//  	v_debug("v_motor_offset_x        = %-0.3f",getMotorOffsetX());
+	//  	v_debug("v_motor_offset_y        = %-0.3f",getMotorOffsetY());
+	//  	v_debug("v_sprocket_radius       = %-0.3f",getSprocketRadius());
+	//  	v_debug("v_chain_left_tolerance  = %-0.3f",getChainLeftTolerance());
+	//  	v_debug("v_chain_right_tolerance = %-0.3f",getChainRightTolerance());
+	//  	v_debug("v_sag_correction        = %-0.3f",getSagCorrection());
+	//  	v_debug("v_sled_radius           = %-0.3f",getSledRadius());
+	//  	v_debug("v_forward_guess_tol     = %-0.3f",getForwardGuessTolerance());
+	//  	v_debug("v_max_forward_guesses   = %d",	getMaxForwardGuesses());
+	//  	v_debug("v_guess_max_chain_len   = %-0.3f",getGuessMaxChainLength());
+	//  	v_debug("v_zero_length           = %-0.3f",getZeroLength());
+	//  	v_debug("v_left_zero_offset      = %-0.3f",getLeftZeroOffset());
+	//  	v_debug("v_right_zero_offset     = %-0.3f",getRightZeroOffset());
+	//  	v_debug("v_safe_area_offset      = %-0.3f",getSafeAreaOffset());
+	//  	v_debug("v_zaxis_safe_position   = %-0.3f",getZAxisSafePosition());
+	//  	v_debug("v_line_segment_length   = %-0.3f",getLineSegmentLength());
 	// #endif
 }
+
+#endif

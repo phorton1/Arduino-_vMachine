@@ -5,23 +5,24 @@
 
 #include <Grbl.h>           // for grbl_init() and run_once()
 #include <Config.h>         // for ENABLE_TOUCH_UI
-#include <Report.h>         // for debug_serial()
+#include <Report.h>         // for v_debug()
+
 #include "vMachine.h"       // for V_SDCARD_CS (must come after Grbl.h
 
-// for the moment, ENABLE_TOUCH_UI is defined in Grbl_Esp32/Config.h
-// which creates CLIENT_TOUCH_UI and which allows a client
-// to poll the output using their own "extern WebUI::InputBuffer touch_ui_out"
 
-#ifdef ENABLE_TOUCH_UI
+#if WITH_VMACHINE
 
-    // You can choose between, none, two different UI libraries
-    //   0 == NO LIBRARY (to test memory without linking library)
-    //   1 == grbl_TouchUI (based on LVGL, uses dynamic memory)
-    //   2 == grbl_MinUI (direct to TFT_eSPI, little or no dynamic memory used)
+    // ENABLE_TOUCH_UI is not currently required for Grbl_MinUI and should
+    // be removed from Grbl_Esp32
+    //
+    // For the moment, ENABLE_TOUCH_UI is defined in Grbl_Esp32/Config.h
+    // which creates CLIENT_TOUCH_UI and which allows a client to poll
+    // the output using their own "extern WebUI::InputBuffer touch_ui_out".
+    // that is NOT
 
-    #define WITH_UI
+    // SET FOLLOWING #if to 0 for no UI, or 1 to include the UI
 
-    #ifdef WITH_UI
+    #if 1           // 0=no UI, 1=with UI
 
         #include <Grbl_MinUI.h>
 
@@ -29,14 +30,15 @@
             // override weak definition in Grbl_Esp32
             // called after the Serial port Client has been created
         {
-            debug_serial("vMachine.ino display_init() started");
+            v_debug("vMachine.ino display_init() started");
             Grbl_MinUI_init();
 
-            debug_serial("vMachine.ino display_init() finished");
+            v_debug("vMachine.ino display_init() finished");
         }
 
     #endif
-#endif
+
+#endif  // WITH_VMACHINE
 
 
 
@@ -44,14 +46,22 @@ void setup()
 {
     delay(2000);
     grbl_init();
-    debug_serial("vMachine.ino setup() completed %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
+    #if WITH_VMACHINE
+        v_debug("vMachine.ino setup() completed %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
+    #endif
 }
 
 
 
 void loop()
 {
-    debug_serial("vMachine.ino loop() started %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
+    #if WITH_VMACHINE
+        v_debug("vMachine.ino loop() started %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
+    #endif
+
     run_once();
-    debug_serial("vMachine.ino loop() completed %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
+
+    #if WITH_VMACHINE
+        v_debug("vMachine.ino loop() completed %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
+    #endif
 }

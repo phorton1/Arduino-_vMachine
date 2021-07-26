@@ -10,20 +10,25 @@
 	// as opposed to, say, Grbl.h?
 
 #include "vMachine.h"
+
+#if WITH_VMACHINE
+
+
 #include "vKinematics.h"
 #include "vSensor.h"
 #include "v2812b.h"
-
 
 #include <Grbl.h>
 #include <Config.h>
 #include <System.h>
 #include <SDCard.h>
 #include <Report.h>
+#include <Logging.h>
 #include <Planner.h>
 #include <Protocol.h>
 #include <MotionControl.h>
 #include <GLimits.h>
+
 
 #define WITH_MEMORY_PROBE 1
 
@@ -51,6 +56,36 @@ bool in_homing = false;
 	Adafruit_NeoPixel pixels(NUM_PIXELS,V_LIMIT_LED_PIN);
 #endif  // WITH_V2812B
 
+//-----------------------------------------
+// decoupled output routines
+//-----------------------------------------
+
+void v_debug(const char *format, ...)
+{
+	va_list var;
+	va_start(var, format);
+	char display_buffer[255];
+	vsprintf(display_buffer,format,var);
+	log_debug(display_buffer);
+	va_end(var);
+}
+
+void v_info(const char *format, ...)
+{
+	va_list var;
+	va_start(var, format);
+	char display_buffer[255];
+	vsprintf(display_buffer,format,var);
+	log_info(display_buffer);
+	va_end(var);
+}
+
+
+
+//----------------------------------------
+// utilities
+//----------------------------------------
+
 static inline unsigned long mulRound(float *vals, int axis)
 	// change "motor position" (chain lengths) mm's to steps
 {
@@ -61,6 +96,12 @@ static inline unsigned long mulRound(float *vals, int axis)
 	return retval;
 }
 
+
+
+//---------------------------------------------------------------------
+// machine_init() - override of weakly bound Grbl_Esp32 method
+//---------------------------------------------------------------------
+// main entry point to my stuff
 
 
 #if INIT_SDCARD_AT_STARTUP
@@ -83,10 +124,10 @@ static inline unsigned long mulRound(float *vals, int axis)
 		#if INIT_SDCARD_OLD_FASHIONED_WAY
 
 			// Call SD.begin() directly.
-			info_serial("starting SD Card on pin(%d) %d/%dK",V_SDCARD_CS,xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
+			v_info("starting SD Card on pin(%d) %d/%dK",V_SDCARD_CS,xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
 			if (!SD.begin(V_SDCARD_CS))
 			{
-				info_serial("SD.begin() failed");
+				v_info("SD.begin() failed");
 			}
 			else
 			{
@@ -99,31 +140,31 @@ static inline unsigned long mulRound(float *vals, int axis)
 			// SDState::Idle it is considered busy. They then call
 			// SD.end() after each transaction.
 
-			info_serial("starting sdCard on yaml pin(%s)",config->_spi->_cs.name());
+			v_info("starting sdCard on yaml pin(%s)",config->_spi->_cs.name());
 			SDCard::State state = config->_sdCard->get_state(true);
 			// info_debug("machine_init() get_sd_state() returned %d",state);
 			if (state == SDCard::State::NotPresent)
 			{
-				info_serial("SD Card Not Present");
+				v_info("SD Card Not Present");
 			}
 			else
 			{
 				if (state != SDCard::State::Idle)
-					info_serial("SD Card BUSY");
+					v_info("SD Card BUSY");
 
 		#endif
 
 			uint8_t cardType = SD.cardType();
-			info_serial("SD Card Type: %s",
+			v_info("SD Card Type: %s",
 				cardType == CARD_NONE ? "NONE" :
 				cardType == CARD_MMC  ? "MMC" :
 				cardType == CARD_SD   ? "SDSC" :
 				cardType == CARD_SDHC ? "SDHC" :
 				"UNKNOWN");
 			uint64_t cardSize = SD.cardSize() / (1024 * 1024);
-			info_serial("SD Card Size: %lluMB", cardSize);
-			info_serial("Total space:  %lluMB", (SD.totalBytes()+1024*1024-1) / (1024 * 1024));
-			info_serial("Used space:   %lluMB", (SD.usedBytes()+1024*1024-1) / (1024 * 1024));
+			v_info("SD Card Size: %lluMB", cardSize);
+			v_info("Total space:  %lluMB", (SD.totalBytes()+1024*1024-1) / (1024 * 1024));
+			v_info("Used space:   %lluMB", (SD.usedBytes()+1024*1024-1) / (1024 * 1024));
 
 			// Grbl_Esp32 closes the SD Card after every use.
 			// SDCard::State() and it's usage in Grbl for me to proceed in
@@ -146,21 +187,27 @@ static inline unsigned long mulRound(float *vals, int axis)
 	{
 		vTaskDelay(200/portTICK_PERIOD_MS);
 
-		info_serial("vMemoryProbeTask running on core %d at priority %d",xPortGetCoreID(),uxTaskPriorityGet(NULL));
+		v_info("vMemoryProbeTask running on core %d at priority %d",xPortGetCoreID(),uxTaskPriorityGet(NULL));
 
 		while (true)
 		{
-			debug_serial("mem[ %d secs] %d/%dK",millis()/1000,xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
+			v_debug("mem[ %d secs] %d/%dK",millis()/1000,xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
 			vTaskDelay(15000 / portTICK_PERIOD_MS);
 		}
     }
 #endif
 
 
+
+
+//===========================
+// machine_init()
+//===========================
+
 void machine_init()
 	// override weakly bound method called from Grbl.cpp
 {
-	info_serial("vMachine.cpp::machine_init() on core %d at priority %d %d/%dK",
+	v_info("vMachine.cpp::machine_init() on core %d at priority %d %d/%dK",
 		xPortGetCoreID(),
 		uxTaskPriorityGet(NULL),
 		xPortGetFreeHeapSize()/1024,
@@ -211,7 +258,7 @@ void machine_init()
 	sys_position[Y_AXIS] = mulRound(position,Y_AXIS);
 	sys_position[Z_AXIS] = mulRound(position,Z_AXIS);
 
-	debug_serial("init sys_position(%d,%d,%d) mms(%f,%f,%f)",
+	v_debug("init sys_position(%d,%d,%d) mms(%f,%f,%f)",
 		sys_position[X_AXIS],
 		sys_position[Y_AXIS],
 		sys_position[Z_AXIS],
@@ -230,13 +277,13 @@ void machine_init()
 			0);					// core 1=main Grbl_Esp32 thread/task, 0=my UI and other tasks
 	#endif
 
-	info_serial("vMachine.cpp::machine_init() finished %d/%dK",V_SDCARD_CS,xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
+	v_info("vMachine.cpp::machine_init() finished %d/%dK",V_SDCARD_CS,xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
 }
 
 
-//-------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------
 // cartesian_to_motors - override weekly bound method
-//-------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------
 // the grbl method params are ineptly named and parameterized
 // you have cartesian_to_motors(target,position)
 // where input is first (target) and the "cartesian" and
@@ -261,7 +308,7 @@ bool cartesian_to_motors(float* target, plan_line_data_t* pl_data, float* positi
 		// and/or whether they need to be zero.
 
 	#if DEBUG_VREVERSE
-		debug_serial("cartesian_to_motors(%f,%f,%f) old(%f,%f,%f) feed=%f",
+		v_debug("cartesian_to_motors(%f,%f,%f) old(%f,%f,%f) feed=%f",
 			target[X_AXIS],
 			target[Y_AXIS],
 			target[Z_AXIS],
@@ -271,7 +318,7 @@ bool cartesian_to_motors(float* target, plan_line_data_t* pl_data, float* positi
 			pl_data->feed_rate);
 	#endif
 	#if DEBUG_VREVERSE>1
-		debug_serial("   ctm starting sys_lengths(%f,%f,%f) sys_pos(%d,%d,%d)",
+		v_debug("   ctm starting sys_lengths(%f,%f,%f) sys_pos(%d,%d,%d)",
 			sys_position[X_AXIS] / STEPS_PER_MM(X_AXIS),
 			sys_position[Y_AXIS] / STEPS_PER_MM(Y_AXIS),
 			sys_position[Z_AXIS] / STEPS_PER_MM(Z_AXIS),
@@ -331,7 +378,7 @@ bool cartesian_to_motors(float* target, plan_line_data_t* pl_data, float* positi
 	float zinc = zdist/num_segs;
 
 	#if DEBUG_VREVERSE
-		debug_serial("   ctm doing %d segments with incs(%f,%f,%f)",
+		v_debug("   ctm doing %d segments with incs(%f,%f,%f)",
 			num_segs,
 			xinc,
 			yinc,
@@ -352,7 +399,7 @@ bool cartesian_to_motors(float* target, plan_line_data_t* pl_data, float* positi
 		new_position[Z_AXIS] = position[Z_AXIS];
 
 		#if DEBUG_VREVERSE>1
-			debug_serial("   ctm seg(%d) to(%f,%f,%f) lengths(%f,%f,%f)",
+			v_debug("   ctm seg(%d) to(%f,%f,%f) lengths(%f,%f,%f)",
 				seg_num,
 				position[X_AXIS],
 				position[Y_AXIS],
@@ -369,7 +416,7 @@ bool cartesian_to_motors(float* target, plan_line_data_t* pl_data, float* positi
 
 
 	#if DEBUG_VREVERSE>1
-		debug_serial("cartesian_to_motors final lengths(%f,%f,%f) steps(%d,%d,%d)",
+		v_debug("cartesian_to_motors final lengths(%f,%f,%f) steps(%d,%d,%d)",
 			new_position[X_AXIS],
 			new_position[Y_AXIS],
 			new_position[Z_AXIS],
@@ -382,15 +429,15 @@ bool cartesian_to_motors(float* target, plan_line_data_t* pl_data, float* positi
 }
 
 
-//--------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------
 // motors_to_cartesian - override weekly bound method
-//--------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------
 
 void motors_to_cartesian(float* cartesian, float* motors, int n_axis)
 {
 	#if DEBUG_VFORWARD
 		if (prh_debug_forward)
-			debug_serial("motors_to_cartesian(%f,%f,%f) old(%f,%f,%f)",
+			v_debug("motors_to_cartesian(%f,%f,%f) old(%f,%f,%f)",
 				motors[X_AXIS],
 				motors[Y_AXIS],
 				motors[Z_AXIS],
@@ -408,7 +455,7 @@ void motors_to_cartesian(float* cartesian, float* motors, int n_axis)
 
 	#if DEBUG_VFORWARD
 		if (prh_debug_forward)
-			debug_serial("motors_to_cartesian(%f,%f,%f) final(%f,%f,%f)",
+			v_debug("motors_to_cartesian(%f,%f,%f) final(%f,%f,%f)",
 				motors[X_AXIS],
 				motors[Y_AXIS],
 				motors[Z_AXIS],
@@ -419,9 +466,9 @@ void motors_to_cartesian(float* cartesian, float* motors, int n_axis)
 }
 
 
-//------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------
 // Homing
-//------------------------------------------------------------------
+//--------------------------------------------------------------------------------------------------------
 // Unfortunately we cannot easily use the native GRBL homing code because
 // of our coupled axis ... we have to let out one to home the other ....
 // AND we have to do two separate homes ...
@@ -474,7 +521,7 @@ float *my_get_mpos()
 
 void debug_position(const char *what)
 {
-	debug_serial("      %-9s sys_pos(%d,%d,%d) sys_lengths(%f,%f,%f)",
+	v_debug("      %-9s sys_pos(%d,%d,%d) sys_lengths(%f,%f,%f)",
 		what,
 		sys_position[X_AXIS],
 		sys_position[Y_AXIS],
@@ -497,7 +544,7 @@ bool vHome(int axis)
 	//     of complexity to accomlish this simple task.
 {
 	#if DEBUG_VHOME > 1
-		debug_serial("vHome(%s)",axis?"Y":"X");
+		v_debug("vHome(%s)",axis?"Y":"X");
 		debug_position("start");
 	#endif
 
@@ -598,7 +645,7 @@ bool vHome(int axis)
 	int home_error = 0;
 
 	#if DEBUG_VHOME > 1
-		debug_serial("   vHome phase(%d)  rate(%f)  axis_travel(%f) other_axis_travel(%f)",
+		v_debug("   vHome phase(%d)  rate(%f)  axis_travel(%f) other_axis_travel(%f)",
 			home_phase,
 			pl_data->feed_rate,
 			axis_travel,
@@ -620,7 +667,7 @@ bool vHome(int axis)
 		if (rtReset)
 		{
 			#if DEBUG_VHOME
-				debug_serial("   vHome rtReset==HomingFailReset 6");
+				v_debug("   vHome rtReset==HomingFailReset 6");
 			#endif
 			sys_rt_exec_alarm = ExecAlarm::HomingFailReset;		// 6
 			home_error = 1;
@@ -630,7 +677,7 @@ bool vHome(int axis)
 			if (!(home_phase & 1))
 			{
 				#if DEBUG_VHOME
-					debug_serial("   vHome rtCycleStop==HomingFailApproach 9");
+					v_debug("   vHome rtCycleStop==HomingFailApproach 9");
 				#endif
 				sys_rt_exec_alarm = ExecAlarm::HomingFailApproach;   // 9
 				home_error = 1;
@@ -638,7 +685,7 @@ bool vHome(int axis)
 			else if (limit_state & bit_axis)
 			{
 				#if DEBUG_VHOME
-					debug_serial("   vHome rtCycleStop==HomingFailPulloff 8");
+					v_debug("   vHome rtCycleStop==HomingFailPulloff 8");
 				#endif
 				sys_rt_exec_alarm = ExecAlarm::HomingFailPulloff;	// 8
 				home_error = 1;
@@ -705,7 +752,7 @@ bool vHome(int axis)
 				if (next_phase)		// if still going
 				{
 					#if DEBUG_VHOME > 1
-						debug_serial("   vHome next_phase(%d)  rate(%f)  axis_travel(%f)",
+						v_debug("   vHome next_phase(%d)  rate(%f)  axis_travel(%f)",
 							home_phase,
 							pl_data->feed_rate,
 							axis_travel);
@@ -745,7 +792,9 @@ bool vHome(int axis)
 		// motors_set_homing_mode(cycle_mask, false);
 		// tell motors homing is done
 
-		error_all("Homing fail");
+		v_debug("Homing fail");
+			// prh - this is not an official error or alarm.
+			// The alarm code has already been set above.
 		mc_reset();
 		protocol_execute_realtime();
 		return false;
@@ -754,7 +803,7 @@ bool vHome(int axis)
 	{
 		#if DEBUG_VHOME > 1
 			float *dbg_mms = my_get_mpos();
-			debug_serial("   vHome(%s) finished",axis?"Y":"X");
+			v_debug("   vHome(%s) finished",axis?"Y":"X");
 			debug_position("end");
 		#endif
 
@@ -804,8 +853,8 @@ bool user_defined_homing(uint8_t cycle_mask)
 
 	#if DEBUG_VHOME
 		float *dbg_mms = my_get_mpos();
-		debug_serial("vMachine-home(0x%02x)",cycle_mask);
-		debug_serial(" STEPS_PER_MM(%f,%f,%f)",
+		v_debug("vMachine-home(0x%02x)",cycle_mask);
+		v_debug(" STEPS_PER_MM(%f,%f,%f)",
 			STEPS_PER_MM(X_AXIS),
 			STEPS_PER_MM(Y_AXIS),
 			STEPS_PER_MM(Z_AXIS));
@@ -816,7 +865,8 @@ bool user_defined_homing(uint8_t cycle_mask)
 
 	if (cycle_mask & (bit(X_AXIS) | bit(Y_AXIS) | bit(A_AXIS) | bit(B_AXIS) | bit(C_AXIS)))
 	{
-		error_all("error: %d only $H or $HZ are allowed in vMachine-home(0x%02x)",
+		// prh - this is no longer an error, but merely report to the user ...
+		v_info("error: %d only $H or $HZ are allowed in vMachine-home(0x%02x)",
 			Error::SettingDisabled,
 			cycle_mask);
 		return true;
@@ -852,7 +902,7 @@ bool user_defined_homing(uint8_t cycle_mask)
 	if (cycle_mask == bit(Z_AXIS))
 	{
 		#if DEBUG_VHOME
-			debug_serial("plotter-home Z_AXIS early exit");
+			v_debug("plotter-home Z_AXIS early exit");
 		#endif
 		return true;
 	}
@@ -927,7 +977,7 @@ bool user_defined_homing(uint8_t cycle_mask)
 
 
 bool /*WEAK_LINK*/ not_limitsCheckTravel(float* target)
-	// overriden version of limitsCheckTravel
+	// unused overriden version of limitsCheckTravel
 {
 	// so far I've just added debugging
 	// Todo: enforce limits in terms of machine_width/height and safe area
@@ -940,13 +990,15 @@ bool /*WEAK_LINK*/ not_limitsCheckTravel(float* target)
 	{
         float max_mpos, min_mpos;
         auto  axisSetting = axes->_axis[axis];
-		// debug_serial("limit check %f > %f < %f",limitsMinPosition(axis),target[axis],limitsMaxPosition(axis));
+		// v_debug("limit check %f > %f < %f",limitsMinPosition(axis),target[axis],limitsMaxPosition(axis));
 
         if ((target[axis] < limitsMinPosition(axis) || target[axis] > limitsMaxPosition(axis)) && axisSetting->_maxTravel > 0)
 		{
-			debug_serial("limit exceeded %f > %f < %f",limitsMinPosition(axis),target[axis],limitsMaxPosition(axis));
+			v_debug("limit exceeded %f > %f < %f",limitsMinPosition(axis),target[axis],limitsMaxPosition(axis));
             return true;
         }
     }
     return false;
 }
+
+#endif	// WITH_VMACHINE
