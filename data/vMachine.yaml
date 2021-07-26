@@ -2,20 +2,27 @@
 name: "vMachine"
 board: "vMachine Dev Board"
 
-# Parameters must be in a specific order.
-# I believe everything in this file is necessary.
-# The only documentation is the source code itself if you
-# want to find out if, when, where, how, or why to set a paraemter.
-# TODO: I absolultely MUST comment out most of the Machine H file.
-
-idle_time: 250
-step_type: RMT
-dir_delay_microseconds: 1
-pulse_microseconds: 2
-disable_delay_us: 0
-
 homing_init_lock: false
 
+
+# Parameters must be in a specific order.
+# I believe everything in this file is necessary, though I have
+# not done an exhaustive analsys vs the defaults which are apparently
+# somewhat in flux at this time.
+#
+# The only documentation is the source code itself or $CD command
+# if you want to find out if, when, where, how, or why to set a paraemter.
+
+
+stepping:
+    engine: RMT
+    idle_ms: 250
+        # this one is important, I thought there was a bug
+        # but they changed the names and level of these yaml
+        # settings so the idle_ms was 255 which means "don't"
+    pulse_us: 2
+    dir_delay_us: 1
+    disable_delay_us: 0
 
 axes:
     number_axis: 3
