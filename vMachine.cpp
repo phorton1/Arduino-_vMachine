@@ -30,7 +30,8 @@
 #include <GLimits.h>
 
 
-#define WITH_MEMORY_PROBE 1
+#define WITH_MEMORY_PROBE 0
+
 
 #define DEBUG_VHOME   	2		// can be up to 2
 #define DEBUG_VREVERSE  0
