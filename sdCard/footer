@@ -1,4 +1,0 @@
-; prh - end of generated gcode
-; this is my prh footer
-
-G54     ; change back to default coordinate system
