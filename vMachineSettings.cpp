@@ -5,9 +5,6 @@
 
 #if WITH_VMACHINE
 
-#include <Report.h>
-
-
 // Set G55 to 12x9" paper and go to upper right corner
 //
 // 		g10 L2 p2 x47.6 y35.7 z0
@@ -87,17 +84,213 @@
 	// length of subsegments done by cartesian_to_motors()
 
 
+//------------------------------------------------------------------
+// 2020-07-29 Configuration Experiments
+//------------------------------------------------------------------
+// There are many things I don't like.
+//
+// - the "machine" must be bound to a yaml file for anything to make sense
+// - you cannot persistently change the vast majority of settings in the yaml file
+//   though Grbl_Esp32 says "ok" if you try.
+// - you can only change a small subset that the "team" has determined
+//
+// It barely works and is weird.  You have to edit and upload the yaml
+// file to accomplish very common things, the most notable being:
+//
+// - change from STATION to AP mode
+// - change the STATION SSID to which you connect
+// - tune the settings (i.e. vMachine stuff) persistently
+// - change to a bigger machine of the same type (i.e. a bigger vMachine)
+//
+// And perhaps most primarily, you HAVE to specify (or have uploaded)
+// the correct working YAML file that is bound to your "machine" for
+// anything to make sense.
+//
+//--------------------------------------------------------------------------
+// The config.yaml included in our data directory is a denormalized
+// copy of that from the Grbl_Esp32 library. By default it boots up
+// with NO $comms/wifi_ap "section"
+//---------------------------------------------------------------------------
+//
+// Today is experimentation to see if I can set things up to effect some
+// kind of reasonable behavior.  My possible entry points are:
+//
+// grbl_init()          abstracted
+//
+// display_init()    - called just before settingsInit()
+//
+// settingsInit() sets global "setting" config_filename
+//
+//        config_filename = new StringSetting(EXTENDED, WG, NULL, "Config/Filename", "config.yaml");
+//        from SettingDefinitions.cpp::make_settings() which is calle from ProcessSettings.cpp::settings_init()
+//        which is called immediately AFTER display_init().
+//
+// bool configOkay = config->load(config_filename->get());
+//
+//      the primary STATIC entry point to configuration
+//      yaml configuration takes place here.
+//      I can diddle and add settings during overridden
+//          vMachineSettings.cpp::afterParse() method
+//
+// I can't get *in-between* the setting of the default filename
+// and it's passing to the static (non virtual) "load()" method.
+//
+// global non-static variable in MachineConfig.cpp *might* allow me to "force" a config file
+// even if there is NO yaml file (but NOT if there is a config.yaml)
+//
+//   char defaultConfig[] = "name: Default\nboard: None\n";
+//
+// I still can't believe you cant change STA/SSID or "mode" at
+// runtime.  This thing is so "hodge-podgy"
+//
+//------------------------------
+// What do I want?
+//------------------------------
+//
+// Well, i think you should be able to modify all those "settings" at runtime,
+// like you used to.   It should create them (and read them) from EEPROM overriding
+// the ones, if any, from the YAML settings. The YAML settings should define the
+// "base" machine.  And *especially* the comm settings should, by default, include
+// a station object and allow for the overriding of the station SSID (not done)
+// like is done with the password at this time.
+//
+//
+// So my choices:
+//
+//   (a) include my vMachine.yaml as the default "config.yaml" file
+//   (b) include an empty STATION in the config.yaml
+//   (c) allow for persistent values from EEPROM to override any existing
+//       configured setting persistently.  Can note when they are different
+//       than the yaml/default settings and remove/add them to EEPROM as
+//       needed.
+//
+//  $comms/wifi_sta/ssid=THX36
+//
+//------------------------------------------
+// How does this thing effing work?
+//------------------------------------------
+//
+// Focusing on $machine_width=410
+//
+//      (1) all the blah-blah ends up calling ProcessSettings.cpp::do_command_or_setting(key,value), which then
+//      (2) constructs a Configuration::RuntimeSetting rts(key, value, out)
+//
+
+
+#define CONFIGURE_WIFI_EXPERIMENT   	0
+#define PERSISTENT_SETTING_EXPERIMENT  	0
+
+#if CONFIGURE_WIFI_EXPERIMENT
+	#include <Machine/Communications.h>
+	#include <Machine/WifiAPConfig.h>
+	#include <Machine/WifiSTAConfig.h>
+#endif
+
+#if PERSISTENT_SETTING_EXPERIMENT
+	#include <nvs.h>
+	#include <Settings.h>
+	#include <Configuration/ParserHandler.h>
+#endif
+
 
 void vMachine::afterParse() // override
 {
+	v_debug("vMachine::afterParse() called");
+
+	#if CONFIGURE_WIFI_EXPERIMENT
+		if (!_comms)
+		{
+			log_info("Comms: vMachine creating _comms");
+			_comms = new Machine::Communications();
+		}
+		#ifdef ENABLE_WIFI
+			if (!_comms->_apConfig)
+			{
+				log_info("Comms: vMachine creating _comms->_apConfig");
+				_comms->_apConfig = new Machine::WifiAPConfig();
+			}
+			if (!_comms->_staConfig)
+			{
+				log_info("Comms: vMachine creating _comms->_apConfig");
+				_comms->_staConfig = new Machine::WifiSTAConfig();
+				// _comms->_staConfig->_ssid = "THX36";
+			}
+		#endif
+	#endif
+
 	Machine::MachineConfig::afterParse();
 }
+
 
 
 
 void vMachine::group(Configuration::HandlerBase& handler) // override
 {
 	// handler.section("vMachine", NULL);
+
+	// this method is called A LOT
+	// it would be nice to know WHY
+
+	#if PERSISTENT_SETTING_EXPERIMENT
+		const char *key_name = "machine_width";
+
+		const char *htype = "UNKNOWN";
+		switch (handler.handlerType())
+		{
+			case Configuration::HandlerType::Parser		:  htype="Parser";  break;
+			case Configuration::HandlerType::AfterParse	:  htype="AfterParse";  break;
+			case Configuration::HandlerType::Runtime	:  htype="Runtime";  break;
+			case Configuration::HandlerType::Generator	:  htype="Generator";  break;
+			case Configuration::HandlerType::Validator	:  htype="Validator";  break;
+		}
+
+		v_debug("vMachine::group(handler=%s) called",htype);
+		nvs_handle _nvs = Setting::_handle;
+		// v_debug("NVS HANDLE=%08x",(uint32_t)_nvs);
+
+		if (handler.handlerType() == Configuration::HandlerType::Parser)
+		{
+			Configuration::ParserHandler *parser = (Configuration::ParserHandler *) &handler;
+			// v_debug("    ParserHandler.path=%s",parser->_path);
+		}
+
+		static bool started = false;
+		if (_nvs && !started)
+		{
+			started = true;
+
+			nvs_stats_t stats;
+			esp_err_t err = nvs_get_stats(NULL, &stats);
+			if (!err)
+			{
+				log_info("NVS Used:" << stats.used_entries << " Free:" << stats.free_entries << " Total:" << stats.total_entries << " NameSpaceCount:" << stats.namespace_count);
+				#if 0  // The SDK we use does not have this yet
+					nvs_iterator_t it = nvs_entry_find(NULL, NULL, NVS_TYPE_ANY);
+					while (it != NULL)
+					{
+						nvs_entry_info_t info;
+						nvs_entry_info(it, &info);
+						it = nvs_entry_next(it);
+						log_info("namespace:"<<info.namespace_name<<" key:"<<info.key<<" type:"<< info.type);
+					}
+				#endif
+			}
+
+			size_t  len = 0;
+			err = nvs_get_str(_nvs, key_name, NULL, &len);
+			if (!err)
+			{
+				char buf[len];
+				err = nvs_get_str(_nvs, key_name, buf, &len);
+				if (!err)
+				{
+					v_debug("PRH GOT config value for v_machine_width=%s",buf);
+					char* floatEnd;
+					v_machine_width = strtof(buf, &floatEnd);
+				}
+			}
+		}
+	#endif	// PERSISTENT_SETTING_EXPERIMENT
 
 	handler.item("machine_width", 			v_machine_width);
 	handler.item("machine_height", 			v_machine_height);
@@ -118,12 +311,31 @@ void vMachine::group(Configuration::HandlerBase& handler) // override
 	handler.item("safe_position_z",     	v_zaxis_safe_position);
 	handler.item("line_segment_length",     v_line_segment_length);
 
+	#if	PERSISTENT_SETTING_EXPERIMENT
+		if (handler.handlerType() == Configuration::HandlerType::Runtime)
+		{
+			if (v_machine_width != VMACHINE_DEFAULT_MACHINE_WIDTH)
+			{
+				v_debug("DETECTED CHANGED RUNTIME VALUE v_machine_width=%3.1f",v_machine_width);
+				char buf[8];
+				sprintf(buf,"%3.1f",v_machine_width);
+				nvs_set_str(_nvs,key_name,buf);
+
+			}
+			else
+			{
+				v_debug("DETECTED DEFAULT VALUE v_machine_width=%3.1f",v_machine_width);
+				nvs_erase_key(_nvs, key_name);
+			}
+		}
+	#endif
+
 	Machine::MachineConfig::group(handler);
 }
 
 
 void vMachine::initSettings()
-	// override weakly bound method called from Grbl.cpp
+	// called from my derived MachineConfig ctor
 {
 	// v_info("vMachine::initSettings()");
 	// called from static ctor - bad idea to use Serial output
