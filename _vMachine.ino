@@ -56,5 +56,6 @@ void loop()
 {
     v_debug("vMachine.ino loop() started %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
     run_once();
+    delay(1000);    // for display of following message to work with Grbl_Esp32 asynch debug output
     v_debug("vMachine.ino loop() completed %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
  }
