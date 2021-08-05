@@ -12,6 +12,12 @@
 
 #if WITH_VMACHINE
 
+    #define INIT_SD_DURING_SETUP
+
+    #ifdef INIT_SD_DURING_SETUP
+        #include <SD.h>
+    #endif
+
     // ENABLE_TOUCH_UI is not currently required for Grbl_MinUI and should
     // be removed from Grbl_Esp32
     //
@@ -45,8 +51,16 @@
 void setup()
 {
     delay(2000);
+
+    #ifdef INIT_SD_DURING_SETUP
+        bool sd_ok = SD.begin(V_SDCARD_CS);
+    #endif
+
     grbl_init();
     #if WITH_VMACHINE
+        #ifdef INIT_SD_DURING_SETUP
+            v_debug("vMachine.ino SD.begin() %s during setup()",sd_ok?"WORKED OK":"FAILED");
+        #endif
         v_debug("vMachine.ino setup() completed %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
     #endif
 }
