@@ -3,7 +3,6 @@
 
 #include "vMachine.h"
 
-#if WITH_VMACHINE
 
 // Set G55 to 12x9" paper and go to upper right corner
 //
@@ -383,4 +382,3 @@ void vMachine::initSettings()
 	// #endif
 }
 
-#endif

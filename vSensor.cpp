@@ -1,11 +1,7 @@
 
 #include "vSensor.h"
-
-#if WITH_VMACHINE
-
 #include "v2812b.h"
-#include <Report.h>
-
+#include "vMachine.h"
 
 #define DEBUG_SENSOR  0
 
@@ -168,7 +164,7 @@ void vSensorTask(void* pvParameters)
         vTaskDelay(VTASK_DELAY_MS / portTICK_PERIOD_MS);
         bool x = x_sensor.pollState();
         bool y = y_sensor.pollState();
-        // grbl_sendf(CLIENT_SERIAL, "[MSG: vSensor x(%d) y(%d)]\r\n",x,y);
+        // v_debug("vSensor x(%d) y(%d)",x,y);
 
         bool led_on = x || y;
         static bool led_state = 0;
@@ -186,13 +182,5 @@ void vSensorTask(void* pvParameters)
 				digitalWrite(V_LIMIT_LED_PIN,led_on);
 			#endif
         }
-
-        static UBaseType_t uxHighWaterMark = 0;
-#ifdef DEBUG_TASK_STACK
-        reportTaskStackSize(uxHighWaterMark);
-#endif
     }
 }
-
-
-#endif	// WITH_VMACHINE

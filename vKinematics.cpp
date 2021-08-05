@@ -17,12 +17,9 @@
     2021 - Patrick Horton
 */
 
-
 #include "vKinematics.h"
+#include "vMachine.h"
 
-#if WITH_VMACHINE
-
-#include <Report.h>
 
 #define DEBUG_INVERSE  0
 #define DEBUG_FORWARD  0
@@ -140,7 +137,6 @@ void Kinematics::init()
 void Kinematics::_constrainTarget(float* xTarget,float* yTarget)
     // constrain to -half <= p <= +half +/- SAFE_AREA_OFFSET
 {
-
     *xTarget =
         (*xTarget < -halfWidth-safe_offset) ? -halfWidth-safe_offset :
         (*xTarget > halfWidth+safe_offset) ? halfWidth+safe_offset :
@@ -913,4 +909,3 @@ void  Kinematics::forward(
     }
 
 #endif  // WITH_QUAD_KINEMATICS
-#endif  // WITH_VMACHINE

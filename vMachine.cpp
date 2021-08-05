@@ -10,10 +10,6 @@
 	// as opposed to, say, Grbl.h?
 
 #include "vMachine.h"
-
-#if WITH_VMACHINE
-
-
 #include "vKinematics.h"
 #include "vSensor.h"
 #include "v2812b.h"
@@ -1001,5 +997,3 @@ bool /*WEAK_LINK*/ not_limitsCheckTravel(float* target)
     }
     return false;
 }
-
-#endif	// WITH_VMACHINE

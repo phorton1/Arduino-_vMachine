@@ -1,21 +1,16 @@
-#pragma once
-
-#define WITH_VMACHINE  1
-    // can be set to 0 to get Grbl_Esp32 memory footprint without the vMachine
-    // commented in for all practical pursposes
-
-#if WITH_VMACHINE
-    #include <Machine/MachineConfig.h>
-
-
 // A maslow-like vMachine for the Esp32_Grbl project
 // This version is built on the Yaml_Settings branch
 // of the Esp32_Grbl repository as of July 4, 2021
+
+#pragma once
+
+#include <Machine/MachineConfig.h>
 
 #define X_VLIMIT_PIN                GPIO_NUM_34
 #define Y_VLIMIT_PIN                GPIO_NUM_35
 #define V_LIMIT_LED_PIN             GPIO_NUM_22
 #define V_SDCARD_CS                 GPIO_NUM_21
+
 
 //----------------------------------------
 // Pin Usage
@@ -76,71 +71,69 @@
 
 
 
-    class vMachine : public Machine::MachineConfig
-    {
-        public:
+class vMachine : public Machine::MachineConfig
+{
+    public:
 
-            vMachine()
-            {
-                setInstance(this);
-                initSettings();
-            }
+        vMachine()
+        {
+            setInstance(this);
+            initSettings();
+        }
 
-            float getMachineWidth()			    { return v_machine_width; }
-            float getMachineHeight()			{ return v_machine_height; }
-            float getDistBetweenMotors()		{ return v_dist_between_motors; }
-            float getMotorOffsetX()         	{ return (getDistBetweenMotors() - getMachineWidth())/2; }
-            float getMotorOffsetY()			    { return v_motor_offset_y; }
-            float getSprocketRadius()			{ return v_sprocket_radius; }
-            float getChainLeftTolerance()		{ return v_chain_left_tolerance; }
-            float getChainRightTolerance()	    { return v_chain_right_tolerance; }
-            float getSagCorrection()			{ return v_sag_correction; }
-            float getSledRadius()				{ return v_sled_radius; }
-            float getForwardGuessTolerance()	{ return v_forward_guess_tolerance; }
-            int   getMaxForwardGuesses()		{ return v_max_forward_guesses; }
-            float getGuessMaxChainLength()	    { return v_guess_max_chain_length; }
-            float getZeroLength()				{ return v_zero_length; }
-            float getLeftZeroOffset()			{ return v_left_zero_offset; }
-            float getRightZeroOffset()		    { return v_right_zero_offset; }
-            float getSafeAreaOffset()			{ return v_safe_area_offset; }
-            float getZAxisSafePosition()		{ return v_zaxis_safe_position; }
-            float getLineSegmentLength()		{ return v_line_segment_length; }
+        float getMachineWidth()			    { return v_machine_width; }
+        float getMachineHeight()			{ return v_machine_height; }
+        float getDistBetweenMotors()		{ return v_dist_between_motors; }
+        float getMotorOffsetX()         	{ return (getDistBetweenMotors() - getMachineWidth())/2; }
+        float getMotorOffsetY()			    { return v_motor_offset_y; }
+        float getSprocketRadius()			{ return v_sprocket_radius; }
+        float getChainLeftTolerance()		{ return v_chain_left_tolerance; }
+        float getChainRightTolerance()	    { return v_chain_right_tolerance; }
+        float getSagCorrection()			{ return v_sag_correction; }
+        float getSledRadius()				{ return v_sled_radius; }
+        float getForwardGuessTolerance()	{ return v_forward_guess_tolerance; }
+        int   getMaxForwardGuesses()		{ return v_max_forward_guesses; }
+        float getGuessMaxChainLength()	    { return v_guess_max_chain_length; }
+        float getZeroLength()				{ return v_zero_length; }
+        float getLeftZeroOffset()			{ return v_left_zero_offset; }
+        float getRightZeroOffset()		    { return v_right_zero_offset; }
+        float getSafeAreaOffset()			{ return v_safe_area_offset; }
+        float getZAxisSafePosition()		{ return v_zaxis_safe_position; }
+        float getLineSegmentLength()		{ return v_line_segment_length; }
 
-        protected:
+    protected:
 
-            void afterParse() override;
-            void group(Configuration::HandlerBase& handler) override;
+        void afterParse() override;
+        void group(Configuration::HandlerBase& handler) override;
 
-            void  initSettings();
+        void  initSettings();
 
-            float v_machine_width;
-            float v_machine_height;
-            float v_dist_between_motors;
-            float v_motor_offset_y;
-            float v_sprocket_radius;
-            float v_chain_left_tolerance;
-            float v_chain_right_tolerance;
-            float v_sag_correction;
-            float v_sled_radius;
-            float v_forward_guess_tolerance;
-            int   v_max_forward_guesses;
-            float v_guess_max_chain_length;
-            float v_zero_length;
-            float v_left_zero_offset;
-            float v_right_zero_offset;
-            float v_safe_area_offset;
-            float v_zaxis_safe_position;
-            float v_line_segment_length;
+        float v_machine_width;
+        float v_machine_height;
+        float v_dist_between_motors;
+        float v_motor_offset_y;
+        float v_sprocket_radius;
+        float v_chain_left_tolerance;
+        float v_chain_right_tolerance;
+        float v_sag_correction;
+        float v_sled_radius;
+        float v_forward_guess_tolerance;
+        int   v_max_forward_guesses;
+        float v_guess_max_chain_length;
+        float v_zero_length;
+        float v_left_zero_offset;
+        float v_right_zero_offset;
+        float v_safe_area_offset;
+        float v_zaxis_safe_position;
+        float v_line_segment_length;
 
-    };  // class vMachine
-
-
-    extern vMachine v_machine;
+};  // class vMachine
 
 
-    extern void v_info(const char *format, ...);
-    extern void v_debug(const char *format, ...);
-        // decouple from calling Grbl_Esp32 output routines directly
-        // at a small cost in code and stack space
+extern vMachine v_machine;
 
-#endif  // WITH_VMACHINE
+
+extern void v_info(const char *format, ...);
+extern void v_debug(const char *format, ...);
+    // decouple from calling Grbl_Esp32 output routines directly
+    // at a small cost in code and stack space

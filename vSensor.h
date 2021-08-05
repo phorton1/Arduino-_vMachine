@@ -1,16 +1,12 @@
 #pragma once
 
-#include "vMachine.h"
-#if WITH_VMACHINE
-
 // Class and methods for my Infrared "Stop Switches" that
 // work with painted white lines on a black 5mm GT2 belt.
 
 #include <cstdint>
 
 
-#define VSENSOR_BUFSIZE  10
-
+#define VSENSOR_BUFSIZE        10
 #define VSENSOR_DEFAULT_V_ON   2048     // 1.65V
 #define VSENSOR_DEFAULT_V_OFF  1800     // 1.45V
     // The thresholds are in terms of a 12 bit sample (0..4095)
@@ -56,5 +52,3 @@ class vSensor
 extern int getVSensorState();
 
 void vSensorTask(void* pvParameters);
-
-#endif  // WITH_VMACHINE
