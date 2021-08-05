@@ -601,12 +601,7 @@ bool vHome(int axis)
 	float *target = my_get_mpos();				// system_get_mpos();
 	target[axis] = axis_travel;					// this axis is at "0" (absoute move)
 	target[other_axis] += other_axis_travel;	// relative move
-
-	// mo fawk - sys.homing_axis_lock bits MUST be set for each axis
-	// for the motors to work ...
-
-	sys.homing_axis_lock = bit_axis | bit_other_axis;	// axislock;
-		// a mask of the 'active' axes, but it sounds like the opposite
+	config->_axes->unlock_motors(bit_axis | bit_other_axis);
 
 	// weird line that I did not include from limits_go_home() code:
 	// homing_rate *= sqrt(n_active_axis);  // [sqrt(number of active axis)] Adjust so individual axes all move at homing rate
@@ -695,7 +690,7 @@ bool vHome(int axis)
 			// stop the other axis and continue with the main one
 
 			if (limit_state)
-				sys.homing_axis_lock &= ~bit_other_axis;
+				config->_axes->lock_motors(bit_other_axis);
 
 			// if the main axis hits a stop on 0,2 we move to next state
 			// if the main axis hits a stop on 1,3, it's an error
@@ -814,7 +809,7 @@ bool vHome(int axis)
 
 
 
-bool user_defined_homing(uint8_t cycle_mask)
+bool user_defined_homing(AxisMask cycle_mask)
 	// override weekly bound method.
 	//
 	// Homing Cycles are not used by my code
