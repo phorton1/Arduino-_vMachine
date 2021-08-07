@@ -211,48 +211,11 @@ static inline unsigned long mulRound(float *vals, int axis)
 // machine_init()
 //===========================
 
-void machine_init()
-	// override weakly bound method called from Grbl.cpp
-{
-	v_info("vMachine.cpp::machine_init() on core %d at priority %d %d/%dK",
-		xPortGetCoreID(),
-		uxTaskPriorityGet(NULL),
-		xPortGetFreeHeapSize()/1024,
-		xPortGetMinimumEverFreeHeapSize()/1024);
-
-	#if INIT_SDCARD_AT_STARTUP
-		debug_start_sdcard();
-	#endif
-
-	#ifdef WITH_2812B
-		pixels.begin();
-	#endif  // WITH_2812B
-
-	// initialize the kinematics engine
-
-	kinematics.init();
-
-	// start the vSensorTask
-
-	xTaskCreatePinnedToCore(
-		vSensorTask,		// method
-		"vSensorTask",		// name
-		4096,				// stack_size
-		NULL,				// parameters
-		1,  				// priority
-		NULL,				// returned handle
-		0);					// core 1=main Grbl_Esp32 thread/task, 0=my UI and other tasks
-
-	delay(400);		// to allow task to display it's starup message
-
-
-	//-----------------------------------------------------------------
+void setDefaultPosition()
 	// set system at imaginary center position to start
-	//-----------------------------------------------------------------
 	// These are just imaginary values until we are homed.
-
+{
 	memset(sys_position,0,MAX_N_AXIS * sizeof(unsigned long));
-		// trying to find bug
 
 	float position[MAX_N_AXIS];
 	kinematics.inverse(
@@ -272,6 +235,49 @@ void machine_init()
 		(float)sys_position[X_AXIS] / STEPS_PER_MM(X_AXIS),
 		(float)sys_position[Y_AXIS] / STEPS_PER_MM(Y_AXIS),
 		(float)sys_position[Z_AXIS] / STEPS_PER_MM(Z_AXIS));
+}
+
+
+
+void machine_init()
+	// override weakly bound method called from Grbl.cpp
+{
+	v_info("vMachine.cpp::machine_init() on core %d at priority %d %d/%dK",
+		xPortGetCoreID(),
+		uxTaskPriorityGet(NULL),
+		xPortGetFreeHeapSize()/1024,
+		xPortGetMinimumEverFreeHeapSize()/1024);
+
+	#if INIT_SDCARD_AT_STARTUP
+		debug_start_sdcard();
+	#endif
+
+	#ifdef WITH_2812B
+		pixels.begin();
+	#endif  // WITH_2812B
+
+	// initialize the kinematics engine
+	// and set the default position
+
+	kinematics.init();
+	setDefaultPosition();
+
+
+	// start the vSensorTask
+
+	xTaskCreatePinnedToCore(
+		vSensorTask,		// method
+		"vSensorTask",		// name
+		4096,				// stack_size
+		NULL,				// parameters
+		1,  				// priority
+		NULL,				// returned handle
+		0);					// core 1=main Grbl_Esp32 thread/task, 0=my UI and other tasks
+
+	delay(400);		// to allow task to display it's starup message
+
+
+
 
 	#if WITH_MEMORY_PROBE
 		xTaskCreatePinnedToCore(
@@ -956,7 +962,7 @@ bool user_defined_homing(AxisMask cycle_mask)
 		// I believe at least all of the following are necessary
 
 		sys.step_control = {};										// definite
-		config->_axes->set_homing_mode(bit(X_AXIS) | bit(Y_AXIS), true);
+		config->_axes->set_homing_mode(bit(X_AXIS) | bit(Y_AXIS), false);
 		// motors_set_homing_mode(bit(X_AXIS) | bit(Y_AXIS), false);	// appears to do nothing with standard steppers
 		plan_reset();												// trying to fix segment mc_lines() in cartesian_to_motors()
 		gc_init();													// <-- may be required in addition sync_position
@@ -970,6 +976,16 @@ bool user_defined_homing(AxisMask cycle_mask)
 		#endif
 
 	}	// if homed both axis
+
+	// for some reason if an alarm is raised during homing,
+	// and then the ctrl-X CLEAR is issued, nothing, esp jogging,
+	// works thereafter.
+
+	else
+	{
+		config->_axes->set_homing_mode(bit(X_AXIS) | bit(Y_AXIS), false);
+		setDefaultPosition();
+	}
 
 	in_homing = false;
 	return true; // we handled it
