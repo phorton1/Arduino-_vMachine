@@ -77,6 +77,16 @@ void v_info(const char *format, ...)
 	va_end(var);
 }
 
+void v_error(const char *format, ...)
+{
+	va_list var;
+	va_start(var, format);
+	char display_buffer[255];
+	vsprintf(display_buffer,format,var);
+	log_error(display_buffer);
+	va_end(var);
+}
+
 
 
 //----------------------------------------
@@ -965,30 +975,3 @@ bool user_defined_homing(AxisMask cycle_mask)
 	return true; // we handled it
 
 }	// user_defined_homing()
-
-
-
-bool /*WEAK_LINK*/ not_limitsCheckTravel(float* target)
-	// unused overriden version of limitsCheckTravel
-{
-	// so far I've just added debugging
-	// Todo: enforce limits in terms of machine_width/height and safe area
-	//     think about what "max_travel" really means, peg it closer, and
-	//     figure out what do use in homing
-
-    auto axes   = config->_axes;
-    auto n_axis = axes->_numberAxis;
-    for (int axis = 0; axis < n_axis; axis++)
-	{
-        float max_mpos, min_mpos;
-        auto  axisSetting = axes->_axis[axis];
-		// v_debug("limit check %f > %f < %f",limitsMinPosition(axis),target[axis],limitsMaxPosition(axis));
-
-        if ((target[axis] < limitsMinPosition(axis) || target[axis] > limitsMaxPosition(axis)) && axisSetting->_maxTravel > 0)
-		{
-			v_debug("limit exceeded %f > %f < %f",limitsMinPosition(axis),target[axis],limitsMaxPosition(axis));
-            return true;
-        }
-    }
-    return false;
-}

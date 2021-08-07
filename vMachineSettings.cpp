@@ -1,9 +1,25 @@
 // vMachineSettings
 
-
 #include "vMachine.h"
 
+#define IMPLEMENT_YAML_OVERRIDES        1
+#define DEBUG_YAML_OVERRIDES    		1
 
+#define DEBUG_YAML 						0
+#define CONFIGURE_WIFI_EXPERIMENT   	0
+
+
+#if CONFIGURE_WIFI_EXPERIMENT
+	#include <Machine/Communications.h>
+	#include <Machine/WifiAPConfig.h>
+	#include <Machine/WifiSTAConfig.h>
+#endif
+
+
+
+//----------------------------------------------
+// Note
+//----------------------------------------------
 // Set G55 to 12x9" paper and go to upper right corner
 //
 // 		g10 L2 p2 x47.6 y35.7 z0
@@ -83,118 +99,14 @@
 	// length of subsegments done by cartesian_to_motors()
 
 
-//------------------------------------------------------------------
-// 2020-07-29 Configuration Experiments
-//------------------------------------------------------------------
-// There are many things I don't like.
-//
-// - the "machine" must be bound to a yaml file for anything to make sense
-// - you cannot persistently change the vast majority of settings in the yaml file
-//   though Grbl_Esp32 says "ok" if you try.
-// - you can only change a small subset that the "team" has determined
-//
-// It barely works and is weird.  You have to edit and upload the yaml
-// file to accomplish very common things, the most notable being:
-//
-// - change from STATION to AP mode
-// - change the STATION SSID to which you connect
-// - tune the settings (i.e. vMachine stuff) persistently
-// - change to a bigger machine of the same type (i.e. a bigger vMachine)
-//
-// And perhaps most primarily, you HAVE to specify (or have uploaded)
-// the correct working YAML file that is bound to your "machine" for
-// anything to make sense.
-//
-//--------------------------------------------------------------------------
-// The config.yaml included in our data directory is a denormalized
-// copy of that from the Grbl_Esp32 library. By default it boots up
-// with NO $comms/wifi_ap "section"
-//---------------------------------------------------------------------------
-//
-// Today is experimentation to see if I can set things up to effect some
-// kind of reasonable behavior.  My possible entry points are:
-//
-// grbl_init()          abstracted
-//
-// display_init()    - called just before settingsInit()
-//
-// settingsInit() sets global "setting" config_filename
-//
-//        config_filename = new StringSetting(EXTENDED, WG, NULL, "Config/Filename", "config.yaml");
-//        from SettingDefinitions.cpp::make_settings() which is calle from ProcessSettings.cpp::settings_init()
-//        which is called immediately AFTER display_init().
-//
-// bool configOkay = config->load(config_filename->get());
-//
-//      the primary STATIC entry point to configuration
-//      yaml configuration takes place here.
-//      I can diddle and add settings during overridden
-//          vMachineSettings.cpp::afterParse() method
-//
-// I can't get *in-between* the setting of the default filename
-// and it's passing to the static (non virtual) "load()" method.
-//
-// global non-static variable in MachineConfig.cpp *might* allow me to "force" a config file
-// even if there is NO yaml file (but NOT if there is a config.yaml)
-//
-//   char defaultConfig[] = "name: Default\nboard: None\n";
-//
-// I still can't believe you cant change STA/SSID or "mode" at
-// runtime.  This thing is so "hodge-podgy"
-//
-//------------------------------
-// What do I want?
-//------------------------------
-//
-// Well, i think you should be able to modify all those "settings" at runtime,
-// like you used to.   It should create them (and read them) from EEPROM overriding
-// the ones, if any, from the YAML settings. The YAML settings should define the
-// "base" machine.  And *especially* the comm settings should, by default, include
-// a station object and allow for the overriding of the station SSID (not done)
-// like is done with the password at this time.
-//
-//
-// So my choices:
-//
-//   (a) include my vMachine.yaml as the default "config.yaml" file
-//   (b) include an empty STATION in the config.yaml
-//   (c) allow for persistent values from EEPROM to override any existing
-//       configured setting persistently.  Can note when they are different
-//       than the yaml/default settings and remove/add them to EEPROM as
-//       needed.
-//
-//  $comms/wifi_sta/ssid=THX36
-//
-//------------------------------------------
-// How does this thing effing work?
-//------------------------------------------
-//
-// Focusing on $machine_width=410
-//
-//      (1) all the blah-blah ends up calling ProcessSettings.cpp::do_command_or_setting(key,value), which then
-//      (2) constructs a Configuration::RuntimeSetting rts(key, value, out)
-//
 
-
-#define CONFIGURE_WIFI_EXPERIMENT   	0
-#define PERSISTENT_SETTING_EXPERIMENT  	0
-
-#if CONFIGURE_WIFI_EXPERIMENT
-	#include <Machine/Communications.h>
-	#include <Machine/WifiAPConfig.h>
-	#include <Machine/WifiSTAConfig.h>
-#endif
-
-#if PERSISTENT_SETTING_EXPERIMENT
-	#include <nvs.h>
-	#include <Settings.h>
-	#include <Configuration/ParserHandler.h>
-#endif
 
 
 void vMachine::afterParse() // override
 {
-	v_debug("vMachine::afterParse() called");
+	#if DEBUG_YAML
+		v_debug("---> vMachine::afterParse() called");
+	#endif
 
 	#if CONFIGURE_WIFI_EXPERIMENT
 		if (!_comms)
@@ -217,7 +129,13 @@ void vMachine::afterParse() // override
 		#endif
 	#endif
 
+	// At this point the tree is fleshed out with items from the yaml file, but not
+	// with the entire tree as *determined* by MachineConfig::afterParse().
+
 	Machine::MachineConfig::afterParse();
+
+	// After this config->group(AfterParse) will be called at which time
+	// NVS ovrrides will be applied
 }
 
 
@@ -227,12 +145,7 @@ void vMachine::group(Configuration::HandlerBase& handler) // override
 {
 	// handler.section("vMachine", NULL);
 
-	// this method is called A LOT
-	// it would be nice to know WHY
-
-	#if PERSISTENT_SETTING_EXPERIMENT
-		const char *key_name = "machine_width";
-
+	#if DEBUG_YAML
 		const char *htype = "UNKNOWN";
 		switch (handler.handlerType())
 		{
@@ -242,54 +155,9 @@ void vMachine::group(Configuration::HandlerBase& handler) // override
 			case Configuration::HandlerType::Generator	:  htype="Generator";  break;
 			case Configuration::HandlerType::Validator	:  htype="Validator";  break;
 		}
+		v_debug("---> vMachine::group(handler=%s) called",htype);
+	#endif
 
-		v_debug("vMachine::group(handler=%s) called",htype);
-		nvs_handle _nvs = Setting::_handle;
-		// v_debug("NVS HANDLE=%08x",(uint32_t)_nvs);
-
-		if (handler.handlerType() == Configuration::HandlerType::Parser)
-		{
-			Configuration::ParserHandler *parser = (Configuration::ParserHandler *) &handler;
-			// v_debug("    ParserHandler.path=%s",parser->_path);
-		}
-
-		static bool started = false;
-		if (_nvs && !started)
-		{
-			started = true;
-
-			nvs_stats_t stats;
-			esp_err_t err = nvs_get_stats(NULL, &stats);
-			if (!err)
-			{
-				log_info("NVS Used:" << stats.used_entries << " Free:" << stats.free_entries << " Total:" << stats.total_entries << " NameSpaceCount:" << stats.namespace_count);
-				#if 0  // The SDK we use does not have this yet
-					nvs_iterator_t it = nvs_entry_find(NULL, NULL, NVS_TYPE_ANY);
-					while (it != NULL)
-					{
-						nvs_entry_info_t info;
-						nvs_entry_info(it, &info);
-						it = nvs_entry_next(it);
-						log_info("namespace:"<<info.namespace_name<<" key:"<<info.key<<" type:"<< info.type);
-					}
-				#endif
-			}
-
-			size_t  len = 0;
-			err = nvs_get_str(_nvs, key_name, NULL, &len);
-			if (!err)
-			{
-				char buf[len];
-				err = nvs_get_str(_nvs, key_name, buf, &len);
-				if (!err)
-				{
-					v_debug("PRH GOT config value for v_machine_width=%s",buf);
-					char* floatEnd;
-					v_machine_width = strtof(buf, &floatEnd);
-				}
-			}
-		}
-	#endif	// PERSISTENT_SETTING_EXPERIMENT
 
 	handler.item("machine_width", 			v_machine_width);
 	handler.item("machine_height", 			v_machine_height);
@@ -310,35 +178,14 @@ void vMachine::group(Configuration::HandlerBase& handler) // override
 	handler.item("safe_position_z",     	v_zaxis_safe_position);
 	handler.item("line_segment_length",     v_line_segment_length);
 
-	#if	PERSISTENT_SETTING_EXPERIMENT
-		if (handler.handlerType() == Configuration::HandlerType::Runtime)
-		{
-			if (v_machine_width != VMACHINE_DEFAULT_MACHINE_WIDTH)
-			{
-				v_debug("DETECTED CHANGED RUNTIME VALUE v_machine_width=%3.1f",v_machine_width);
-				char buf[8];
-				sprintf(buf,"%3.1f",v_machine_width);
-				nvs_set_str(_nvs,key_name,buf);
-
-			}
-			else
-			{
-				v_debug("DETECTED DEFAULT VALUE v_machine_width=%3.1f",v_machine_width);
-				nvs_erase_key(_nvs, key_name);
-			}
-		}
-	#endif
-
 	Machine::MachineConfig::group(handler);
 }
 
 
-void vMachine::initSettings()
-	// called from my derived MachineConfig ctor
-{
-	// v_info("vMachine::initSettings()");
-	// called from static ctor - bad idea to use Serial output
 
+void vMachine::initSettings()
+	// called from my derived MachineConfig static ctor
+{
 	v_machine_width				= VMACHINE_DEFAULT_MACHINE_WIDTH;
 	v_machine_height			= VMACHINE_DEFAULT_MACHINE_HEIGHT;
 	v_dist_between_motors		= VMACHINE_DEFAULT_DIST_BETWEEN_MOTORS;
@@ -358,27 +205,275 @@ void vMachine::initSettings()
 	v_zaxis_safe_position		= VMACHINE_DEFAULT_Z_AXIS_SAFE_POSITION;
 	v_line_segment_length		= VMACHINE_DEFAULT_LINE_SEGMENT_LENGTH;
 
-	// called from static ctor - bad idea to use Serial output
-	// 	#if 0
-	//  	v_debug("v_machine_width         = %-0.3f",getMachineWidth());
-	//  	v_debug("v_machine_height        = %-0.3f",getMachineHeight());
-	//  	v_debug("v_dist_between_motors   = %-0.3f",getDistBetweenMotors());
-	//  	v_debug("v_motor_offset_x        = %-0.3f",getMotorOffsetX());
-	//  	v_debug("v_motor_offset_y        = %-0.3f",getMotorOffsetY());
-	//  	v_debug("v_sprocket_radius       = %-0.3f",getSprocketRadius());
-	//  	v_debug("v_chain_left_tolerance  = %-0.3f",getChainLeftTolerance());
-	//  	v_debug("v_chain_right_tolerance = %-0.3f",getChainRightTolerance());
-	//  	v_debug("v_sag_correction        = %-0.3f",getSagCorrection());
-	//  	v_debug("v_sled_radius           = %-0.3f",getSledRadius());
-	//  	v_debug("v_forward_guess_tol     = %-0.3f",getForwardGuessTolerance());
-	//  	v_debug("v_max_forward_guesses   = %d",	getMaxForwardGuesses());
-	//  	v_debug("v_guess_max_chain_len   = %-0.3f",getGuessMaxChainLength());
-	//  	v_debug("v_zero_length           = %-0.3f",getZeroLength());
-	//  	v_debug("v_left_zero_offset      = %-0.3f",getLeftZeroOffset());
-	//  	v_debug("v_right_zero_offset     = %-0.3f",getRightZeroOffset());
-	//  	v_debug("v_safe_area_offset      = %-0.3f",getSafeAreaOffset());
-	//  	v_debug("v_zaxis_safe_position   = %-0.3f",getZAxisSafePosition());
-	//  	v_debug("v_line_segment_length   = %-0.3f",getLineSegmentLength());
-	// #endif
 }
 
+
+
+#if IMPLEMENT_YAML_OVERRIDES
+
+	#include <SPIFFS.h>
+	#include "Configuration/RuntimeSetting.h"
+
+	#define YAML_FILENAME   	"/yaml_tmp.txt"
+	#define YAML_TEMPNAME   	"/yaml_tmp.tmp"
+	#define MAX_YAML_LENGTH		128
+
+	static char yaml_buf[MAX_YAML_LENGTH+1] = {0};
+
+	static const char *getYamlLine(File &f)
+	{
+		int len = 0;
+		int c = f.read();
+		yaml_buf[0] = 0;
+		while (c >= 0 && c != '\n' && len < MAX_YAML_LENGTH)
+		{
+			yaml_buf[len++] = c;
+			c = f.read();
+		}
+		if (len)
+		{
+			yaml_buf[len] = 0;
+			char *p = yaml_buf;
+			while (*p && *p != '=') p++;
+			if (*p == '=')
+			{
+				*p++ = 0;
+				#if DEBUG_YAML_OVERRIDES > 1
+					v_debug("getYamlLine(%s,%s)",yaml_buf,p);
+				#endif
+				return p;
+			}
+		}
+		#if DEBUG_YAML_OVERRIDES > 1
+			v_debug("getYamlLine returning NULL");
+		#endif
+		return NULL;
+	}
+
+
+	Error saveYamlOverride(const char *path, const char *value)
+		// Open the yaml.tmp file, see if the path is in it.
+		// If the path was not in the file, open for write (append) and add it.
+		// Otherwise, create a new temporary copy replaing the setting in the existin file and rename it.
+	{
+		static bool in_override = false;
+
+		if (in_override)
+		{
+			v_error("saveYamlOverride(%s,%s) re-entered",path,value?value:"NULL");
+			return Error::AnotherInterfaceBusy;
+		}
+		in_override = true;
+
+		// First pass through file to see if path exists in it
+
+		#if DEBUG_YAML_OVERRIDES
+			v_debug("saveYamlOverride(%s,%s)",path,value?value:"NULL");
+		#endif
+
+		Error err = Error::Ok;
+		bool file_exists = false;
+		bool file_has_path = false;
+		if (SPIFFS.exists(YAML_FILENAME))
+		{
+			file_exists = true;
+			File f = SPIFFS.open(YAML_FILENAME);
+			if (f)
+			{
+				while (getYamlLine(f))
+				{
+					if (!strcmp(path,yaml_buf))
+					{
+						file_has_path = true;
+						#if DEBUG_YAML_OVERRIDES > 1
+							v_debug("saveYamlOverride() file_has_path");
+						#endif
+						break;
+					}
+				}
+				f.close();
+			}
+			else
+			{
+				v_error("saveYamlOverride() could not open SPIFFS %s for reading",YAML_FILENAME);
+				err = Error::FsFailedOpenFile;
+			}
+
+		}
+		else
+		{
+			#if DEBUG_YAML_OVERRIDES > 1
+				v_debug("saveYamlOverride() %s does not exist",YAML_FILENAME);
+			#endif
+		}
+
+		// 2nd pass append to existing file or copy/rename
+
+		if (err==Error::Ok && !file_exists || !file_has_path)		// just append to existing file
+		{
+			File f = SPIFFS.open(YAML_FILENAME,FILE_APPEND);
+			if (f)
+			{
+				f.print(path);
+				f.print("=");
+				f.print(value);
+				f.print('\n');
+				f.close();
+				#if DEBUG_YAML_OVERRIDES > 1
+					v_debug("saveYamlOverride() appended %s=%s to %s",path,value,YAML_FILENAME);
+				#endif
+			}
+			else
+			{
+				v_error("saveYamlOverride() could not open SPIFFS %s for writing",YAML_FILENAME);
+				err = Error::FsFailedOpenFile;
+			}
+		}
+		else if (err==Error::Ok)		// copy from old file to new file then rename
+		{
+			#if DEBUG_YAML_OVERRIDES > 1
+				v_debug("saveYamlOverride() creating %s from %s",YAML_TEMPNAME,YAML_FILENAME);
+			#endif
+
+			File fi = SPIFFS.open(YAML_FILENAME);
+			if (!fi)
+			{
+				v_error("saveYamlOverride() could not open SPIFFS %s for reading",YAML_FILENAME);
+				err = Error::FsFailedOpenFile;
+			}
+			else
+			{
+				File fo = SPIFFS.open(YAML_TEMPNAME,FILE_WRITE);
+				if (!fo)
+				{
+					fi.close();
+					v_error("saveYamlOverride() could not open SPIFFS %s for writing",YAML_TEMPNAME);
+					err = Error::FsFailedOpenFile;
+				}
+				else
+				{
+					const char *yaml_value;
+					while (yaml_value = getYamlLine(fi))
+					{
+						if (!strcmp(path,yaml_buf))
+						{
+							#if DEBUG_YAML_OVERRIDES > 1
+								v_debug("saveYamlOverride() replaced %s=%s",path,value);
+							#endif
+							if (fo.print(path) != strlen(path) ||
+								fo.print("=") != 1 ||
+								fo.print(value) != strlen(value))
+							{
+								v_error("saveYamlOverride() could not write yaml_override %s=%s",path,value);
+								err = Error:: NvsSetFailed;
+								break;
+							}
+						}
+						else
+						{
+							if (fo.print(yaml_buf) != strlen(yaml_buf) ||
+								fo.print("=") != 1 ||
+								fo.print(yaml_value) != strlen(yaml_value))
+							{
+								v_error("saveYamlOverride() could not write existing yaml_override %s=%s",yaml_buf,yaml_value);
+								err = Error:: NvsSetFailed;
+								break;
+							}
+						}
+						fo.print('\n');
+					}
+
+					fo.close();
+					fi.close();
+
+					if (err==Error::Ok)
+					{
+						if (!SPIFFS.remove(YAML_FILENAME))
+						{
+							v_error("saveYamlOverride() could not remove %s",YAML_FILENAME);
+							err = Error::NvsSetFailed;
+						}
+						else if (!SPIFFS.rename(YAML_TEMPNAME,YAML_FILENAME))
+						{
+							v_error("saveYamlOverride() could not renane %s to %s",YAML_TEMPNAME,YAML_FILENAME);
+							err = Error::NvsSetFailed;
+						}
+
+					}	// no error copying from one to the other
+				}	// no error opening fo
+			}	// no error opening fi
+		}	// no error on 1st read pass
+
+		#if DEBUG_YAML_OVERRIDES > 1
+			v_debug("saveYamlOverride() returning %d",err);
+		#endif
+
+		in_override = false;
+		return err;
+	}
+
+
+	void loadYamlOverrides()
+	{
+		#if DEBUG_YAML_OVERRIDES
+			v_debug("loadYamlOverrides()");
+		#endif
+		if (SPIFFS.exists(YAML_FILENAME))
+		{
+			File f = SPIFFS.open(YAML_FILENAME);
+			if (f)
+			{
+				const char *yaml_value;
+				while (yaml_value = getYamlLine(f))
+				{
+					Configuration::RuntimeSetting rts(yaml_buf, yaml_value, NULL);
+					config->group(rts);
+
+					// the runtime setting already set the value into the tree,
+					// so validating it at this point is a bit anachrynous.
+					// what about if it is a non-existent key (i.e. gone out of date)
+					// or if it changed types?
+
+					if (!rts.isHandled_)
+					{
+						v_error("YamlOverride(%s,%s) not handled!",yaml_buf,yaml_value);
+					}
+
+					// 	try
+					// 	{
+					// 		Configuration::Validator validator;
+					// 		config->validate();
+					// 		config->group(validator);
+					// 	}
+					// 	catch (std::exception& ex)
+					// 	{
+					// 		log_error("Validation error: " << ex.what() << " at line(" << line_num << "): " << yaml_buf << "=" << yaml_value << " in " << YAML_FILENAME);
+					// 	}
+				}
+
+				f.close();
+			}
+			else
+			{
+				v_error("ERRORcould not open SPIFFS %s for reading",YAML_FILENAME);
+			}
+		}
+		else
+		{
+			#if DEBUG_YAML_OVERRIDES > 1
+				v_debug("loadYamlOverrides() %s does not exist",YAML_FILENAME);
+			#endif
+		}
+	}
+
+
+	void clearYamlOverrides()
+	{
+		#if DEBUG_YAML_OVERRIDES
+			v_debug("clearYamlOverrides()");
+		#endif
+		SPIFFS.remove(YAML_FILENAME);
+		SPIFFS.remove(YAML_TEMPNAME);
+	}
+
+#endif	// IMPLEMENT_YAML_OVERRIDES
