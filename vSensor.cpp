@@ -129,11 +129,94 @@ bool vSensor::pollState()
 }
 
 
+//------------------------------
+// system LED
+//------------------------------
+#ifdef WITH_V2812B
+
+	#include <Grbl.h>
+	#include <Config.h>
+	#include <System.h>
+	#include <SDCard.h>
+
+
+	#define LED_MODE_NONE   0x000000
+	#define LED_MODE_IDLE   0x003355	// cool cyan
+	#define LED_MODE_BUSY   0x555500    // yellow
+	#define LED_MODE_HOLD   0x005500    // bright green
+	#define LED_MODE_HOMING 0x550055	// bright magenta
+	#define LED_MODE_ALARM  0x770000    // blinking red
+
+
+	void setSystemLED()
+	{
+		static bool led_blink = false;
+		static uint32_t led_blink_time = 0;
+		static uint32_t led_mode = LED_MODE_NONE;
+		static State last_sys_state = State::Sleep;
+		static SDCard::State last_sd_state = SDCard::State::NotPresent;
+
+		SDCard *sdCard = config->_sdCard;
+		SDCard::State sd_state = sdCard ?
+			sdCard->get_state(false) :
+			SDCard::State::NotPresent;
+
+		if (last_sd_state != sd_state ||
+			last_sys_state != sys.state)
+		{
+			led_blink = false;
+			led_blink_time = 0;
+
+			switch (sys.state)
+			{
+				case State::Sleep :
+				case State::Idle :
+					led_mode = sd_state == SDCard::State::Busy ?
+						LED_MODE_BUSY :
+						LED_MODE_IDLE;
+					break;
+				case State::ConfigAlarm :
+				case State::SafetyDoor :
+				case State::Alarm :
+					led_mode = LED_MODE_ALARM;
+					led_blink_time = millis() + 500;
+					break;
+				case State::Homing      :
+					led_mode = LED_MODE_HOMING;
+					break;
+				case State::Jog :
+				case State::Cycle :
+				case State::CheckMode :
+					led_mode = LED_MODE_BUSY;
+					break;
+				case State::Hold        :
+					led_mode = LED_MODE_HOLD;
+					break;
+			}
+
+			pixels.setBrightness(50);
+			pixels.setPixelColor(PIXEL_SYS_LED,led_mode);
+			pixels.show();
+
+			last_sd_state = sd_state;
+			last_sys_state = sys.state;
+		}
+		else if (led_blink_time && millis() > led_blink_time)
+		{
+			led_blink_time = millis() + 500;
+			led_blink = !led_blink;
+			pixels.setPixelColor(PIXEL_SYS_LED,led_blink ? led_mode : 0);
+			pixels.show();
+		}
+	}
+#endif
+
+
 //-------------------------------------------------
 // vSensorTask
 //-------------------------------------------------
 
-#define  VTASK_DELAY_MS  10
+#define  VTASK_DELAY_MS  20
 
 
 void vSensorTask(void* pvParameters)
@@ -182,5 +265,8 @@ void vSensorTask(void* pvParameters)
 				digitalWrite(V_LIMIT_LED_PIN,led_on);
 			#endif
         }
+		#ifdef WITH_V2812B
+			setSystemLED();
+		#endif
     }
 }
