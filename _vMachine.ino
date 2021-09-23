@@ -17,16 +17,16 @@
 
 // SET FOLLOWING #if to 0 for no UI, or 1 to include the UI
 
-#if 0           // 0=no UI, 1=with UI
+#if 1           // 0=no UI, 1=with UI
 
-    #include <Grbl_MinUI.h>
+    #include <FluidNC_UI.h>
 
     void display_init()
         // override weak definition in Grbl_Esp32
         // called after the Serial port Client has been created
     {
         v_debug("vMachine.ino display_init() started");
-        Grbl_MinUI_init();
+        FluidNC_UI_init();
         v_debug("vMachine.ino display_init() finished");
     }
 
