@@ -14,7 +14,7 @@
 #include "vSensor.h"
 #include "v2812b.h"
 
-#include <Grbl.h>
+#include <FluidNC.h>
 #include <Config.h>
 #include <System.h>
 #include <SDCard.h>
@@ -147,8 +147,8 @@ static inline unsigned long mulRound(float *vals, int axis)
 			// SDState::Idle it is considered busy. They then call
 			// SD.end() after each transaction.
 
-			v_info("starting sdCard on yaml pin(%s)",config->_spi->_cs.name());
-			SDCard::State state = config->_sdCard->get_state(true);
+			v_info("starting sdCard on pin from Yaml configuration");
+			SDCard::State state = config->_sdCard->begin(SDCard::State::Idle);
 			// info_debug("machine_init() get_sd_state() returned %d",state);
 			if (state == SDCard::State::NotPresent)
 			{
@@ -215,7 +215,7 @@ void setDefaultPosition()
 	// set system at imaginary center position to start
 	// These are just imaginary values until we are homed.
 {
-	memset(sys_position,0,MAX_N_AXIS * sizeof(unsigned long));
+	memset(motor_steps,0,MAX_N_AXIS * sizeof(unsigned long));
 
 	float position[MAX_N_AXIS];
 	kinematics.inverse(
@@ -224,17 +224,17 @@ void setDefaultPosition()
 		&position[X_AXIS],
 		&position[Y_AXIS]);
 	position[Z_AXIS] = v_machine.getZAxisSafePosition(); // is 20 was 0;
-	sys_position[X_AXIS] = mulRound(position,X_AXIS);
-	sys_position[Y_AXIS] = mulRound(position,Y_AXIS);
-	sys_position[Z_AXIS] = mulRound(position,Z_AXIS);
+	motor_steps[X_AXIS] = mulRound(position,X_AXIS);
+	motor_steps[Y_AXIS] = mulRound(position,Y_AXIS);
+	motor_steps[Z_AXIS] = mulRound(position,Z_AXIS);
 
-	v_debug("init sys_position(%d,%d,%d) mms(%f,%f,%f)",
-		sys_position[X_AXIS],
-		sys_position[Y_AXIS],
-		sys_position[Z_AXIS],
-		(float)sys_position[X_AXIS] / STEPS_PER_MM(X_AXIS),
-		(float)sys_position[Y_AXIS] / STEPS_PER_MM(Y_AXIS),
-		(float)sys_position[Z_AXIS] / STEPS_PER_MM(Z_AXIS));
+	v_debug("init motor_steps(%d,%d,%d) mms(%f,%f,%f)",
+		motor_steps[X_AXIS],
+		motor_steps[Y_AXIS],
+		motor_steps[Z_AXIS],
+		(float)motor_steps[X_AXIS] / STEPS_PER_MM(X_AXIS),
+		(float)motor_steps[Y_AXIS] / STEPS_PER_MM(Y_AXIS),
+		(float)motor_steps[Z_AXIS] / STEPS_PER_MM(Z_AXIS));
 }
 
 
@@ -305,7 +305,7 @@ void machine_init()
 //    since we call mc_line()
 // and then motors_to_cartesian(cartesian,motors)
 //    where the return parameter is first, and input is second
-// none of these is to be confused with sys_position, which is
+// none of these is to be confused with motor_steps, which is
 // the unsigned long STEP_COUNT for the stepper motors which is really
 // the underlying coordinate system ...
 
@@ -332,12 +332,12 @@ bool cartesian_to_motors(float* target, plan_line_data_t* pl_data, float* positi
 	#endif
 	#if DEBUG_VREVERSE>1
 		v_debug("   ctm starting sys_lengths(%f,%f,%f) sys_pos(%d,%d,%d)",
-			sys_position[X_AXIS] / STEPS_PER_MM(X_AXIS),
-			sys_position[Y_AXIS] / STEPS_PER_MM(Y_AXIS),
-			sys_position[Z_AXIS] / STEPS_PER_MM(Z_AXIS),
-			sys_position[X_AXIS],
-			sys_position[Y_AXIS],
-			sys_position[Z_AXIS]);
+			motor_steps[X_AXIS] / STEPS_PER_MM(X_AXIS),
+			motor_steps[Y_AXIS] / STEPS_PER_MM(Y_AXIS),
+			motor_steps[Z_AXIS] / STEPS_PER_MM(Z_AXIS),
+			motor_steps[X_AXIS],
+			motor_steps[Y_AXIS],
+			motor_steps[Z_AXIS]);
 	#endif
 
 	#ifdef RENDER_TOOL_MOVEMENT
@@ -526,7 +526,7 @@ float *my_get_mpos()
 	static float motors[MAX_N_AXIS];
 	for (int idx = 0; idx < MAX_N_AXIS; idx++)
 	{
-		motors[idx] = (float)sys_position[idx] / STEPS_PER_MM(idx);
+		motors[idx] = (float)motor_steps[idx] / STEPS_PER_MM(idx);
 	}
 	return motors;
 }
@@ -536,12 +536,12 @@ void debug_position(const char *what)
 {
 	v_debug("      %-9s sys_pos(%d,%d,%d) sys_lengths(%f,%f,%f)",
 		what,
-		sys_position[X_AXIS],
-		sys_position[Y_AXIS],
-		sys_position[Z_AXIS],
-		sys_position[X_AXIS] / STEPS_PER_MM(X_AXIS),
-		sys_position[Y_AXIS] / STEPS_PER_MM(Y_AXIS),
-		sys_position[Z_AXIS] / STEPS_PER_MM(Z_AXIS));
+		motor_steps[X_AXIS],
+		motor_steps[Y_AXIS],
+		motor_steps[Z_AXIS],
+		motor_steps[X_AXIS] / STEPS_PER_MM(X_AXIS),
+		motor_steps[Y_AXIS] / STEPS_PER_MM(Y_AXIS),
+		motor_steps[Z_AXIS] / STEPS_PER_MM(Z_AXIS));
 }
 
 
@@ -601,14 +601,14 @@ bool vHome(int axis)
 
 	float fast_rate = homing->_seekRate;		// DEFAULT_HOMING_SEEK_RATE;
 	float slow_rate = homing->_feedRate;		// DEFAULT_HOMING_FEED_RATE;
-	float pull_off  = homing->_pulloff;			// DEFAULT_HOMING_PULLOFF;
+	float pull_off  = the_axis->_motors[0]->_pulloff;			// DEFAULT_HOMING_PULLOFF;
 	float other_axis_travel = EXTRA_TRAVEL_RATIO * the_axis->_maxTravel;	// out
 	float axis_travel = -other_axis_travel;								// in
 
-	// fawk - need to clear cycle stop and set the (next) axis sys_position to zero
+	// fawk - need to clear cycle stop and set the (next) axis motor_steps to zero
 
 	rtCycleStop = false;
-	sys_position[axis] = 0;
+	motor_steps[axis] = 0;
 
 	// setup for intial 'seek' move
 	// where we wind in the axis and wind out the other_axis
@@ -677,7 +677,7 @@ bool vHome(int axis)
 			#if DEBUG_VHOME
 				v_debug("   vHome rtReset==HomingFailReset 6");
 			#endif
-			sys_rt_exec_alarm = ExecAlarm::HomingFailReset;		// 6
+			rtAlarm = ExecAlarm::HomingFailReset;		// 6
 			home_error = 1;
 		}
 		else if (rtCycleStop)
@@ -687,7 +687,7 @@ bool vHome(int axis)
 				#if DEBUG_VHOME
 					v_debug("   vHome rtCycleStop==HomingFailApproach 9");
 				#endif
-				sys_rt_exec_alarm = ExecAlarm::HomingFailApproach;   // 9
+				rtAlarm = ExecAlarm::HomingFailApproach;   // 9
 				home_error = 1;
 			}
 			else if (limit_state & bit_axis)
@@ -695,7 +695,7 @@ bool vHome(int axis)
 				#if DEBUG_VHOME
 					v_debug("   vHome rtCycleStop==HomingFailPulloff 8");
 				#endif
-				sys_rt_exec_alarm = ExecAlarm::HomingFailPulloff;	// 8
+				rtAlarm = ExecAlarm::HomingFailPulloff;	// 8
 				home_error = 1;
 			}
 		}
@@ -767,7 +767,7 @@ bool vHome(int axis)
 						debug_position("next");
 					#endif
 
-					// the target must be reset from the sys_position each new phase
+					// the target must be reset from the motor_steps each new phase
 					//     so that other axes are already where they will be targeted
 					// and the system_position for the current axis must be zeroed
 					// 	   or else the moves are considered to be relative to whatever tf
@@ -776,7 +776,7 @@ bool vHome(int axis)
 					//     to implement a user_defined_homing() method.
 
 					rtCycleStop = false;
-					sys_position[axis] = 0;
+					motor_steps[axis] = 0;
 					target = my_get_mpos();						// system_get_mpos();
 					target[axis] = axis_travel;					// absolute move
 					target[other_axis] += other_axis_travel; 	// relative move to come off of stop
@@ -881,17 +881,17 @@ bool user_defined_homing(AxisMask cycle_mask)
 	}
 
 	// Set the Z Axis Zervo at Z_AXIS_SAFE_POSITION
-	// We just set sys_position and enable the servo for a while.
+	// We just set motor_steps and enable the servo for a while.
 	//
 	// EXCEPT I effing hate this ... THERE IS NO SIMPLE WAY TO JUST
-	// MOVE A MOTOR TO A POSITION AND SET SYS_POSITION.  This scheme
+	// MOVE A MOTOR TO A POSITION AND SET motor_steps.  This scheme
 	// is almost impossible to figure out. ALL I WANT TO DO IS MOVE
 	// THE Z SERVO TO A SAFE PLACE !!!
 
 	// if (cycle_mask & bit(Z_AXIS))		// for testing, only when Z home button is pressed
 	{
 		config->_axes->set_disable(Z_AXIS,false);	// motors_set_disable(false, bit(Z_AXIS));
-		sys_position[Z_AXIS] = v_machine.getZAxisSafePosition() * STEPS_PER_MM(Z_AXIS);
+		motor_steps[Z_AXIS] = v_machine.getZAxisSafePosition() * STEPS_PER_MM(Z_AXIS);
 		vTaskDelay(1000);
 		config->_axes->set_disable(Z_AXIS,true);	// motors_set_disable(true, bit(Z_AXIS));
 
@@ -919,8 +919,8 @@ bool user_defined_homing(AxisMask cycle_mask)
 	config->_axes->set_homing_mode(bit(X_AXIS) | bit(Y_AXIS), true);
 		// motors_set_homing_mode(bit(X_AXIS) | bit(Y_AXIS), true);
 
-	sys_position[X_AXIS] = 0;
-	sys_position[Y_AXIS] = 0;
+	motor_steps[X_AXIS] = 0;
+	motor_steps[Y_AXIS] = 0;
 
 	if (vHome(Y_AXIS) && vHome(X_AXIS))
 	{
@@ -936,10 +936,10 @@ bool user_defined_homing(AxisMask cycle_mask)
 		// point and the latter will be close to the X motor at
 		// something like (750,19000)
 
-		sys_position[X_AXIS] +=
+		motor_steps[X_AXIS] +=
 			(v_machine.getZeroLength() + v_machine.getLeftZeroOffset()) *
 			STEPS_PER_MM(X_AXIS);
-		sys_position[Y_AXIS] +=
+		motor_steps[Y_AXIS] +=
 			(v_machine.getZeroLength() + v_machine.getRightZeroOffset()) *
 			STEPS_PER_MM(Y_AXIS);
 

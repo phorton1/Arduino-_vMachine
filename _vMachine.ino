@@ -3,7 +3,7 @@
 //----------------------------------------------------
 // A v-type CNC machine based on the Grbl_Esp32 library.
 
-#include <Grbl.h>           // for grbl_init() and run_once()
+#include <FluidNC.h>        // for main_init() and run_once()
 #include <Config.h>         // for ENABLE_TOUCH_UI
 #include <Report.h>         // for v_debug()
 
@@ -17,7 +17,7 @@
 
 // SET FOLLOWING #if to 0 for no UI, or 1 to include the UI
 
-#if 1           // 0=no UI, 1=with UI
+#if 0           // 0=no UI, 1=with UI
 
     #include <Grbl_MinUI.h>
 
@@ -41,7 +41,7 @@ void setup()
         bool sd_ok = SD.begin(V_SDCARD_CS);
     #endif
 
-    grbl_init();
+    main_init();
 
     #ifdef INIT_SD_DURING_SETUP
         v_debug("vMachine.ino SD.begin() %s during setup()",sd_ok?"WORKED OK":"FAILED");

@@ -134,7 +134,7 @@ bool vSensor::pollState()
 //------------------------------
 #ifdef WITH_V2812B
 
-	#include <Grbl.h>
+	#include <FluidNC.h>
 	#include <Config.h>
 	#include <System.h>
 	#include <SDCard.h>
@@ -158,7 +158,7 @@ bool vSensor::pollState()
 
 		SDCard *sdCard = config->_sdCard;
 		SDCard::State sd_state = sdCard ?
-			sdCard->get_state(false) :
+			sdCard->get_state() :
 			SDCard::State::NotPresent;
 
 		if (last_sd_state != sd_state ||

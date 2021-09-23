@@ -4,28 +4,14 @@ board: "vMachine Dev Board"
 
 homing_init_lock: false
 
-
-# Parameters must be in a specific order.
-# I believe everything in this file is necessary, though I have
-# not done an exhaustive analsys vs the defaults which are apparently
-# somewhat in flux at this time.
-#
-# The only documentation is the source code itself or $CD command
-# if you want to find out if, when, where, how, or why to set a paraemter.
-
-
 stepping:
     engine: RMT
     idle_ms: 250
-        # this one is important, I thought there was a bug
-        # but they changed the names and level of these yaml
-        # settings so the idle_ms was 255 which means "don't"
     pulse_us: 2
     dir_delay_us: 1
     disable_delay_us: 0
 
 axes:
-    number_axis: 3
     shared_stepper_disable: gpio.14
         # :low
         
@@ -34,8 +20,9 @@ axes:
         max_rate: 4000
         acceleration: 200
         max_travel: 1000
-        soft_limits: true
-        gang0:
+        # soft_limits: true
+        motor0:
+            pulloff: 15
             standard_stepper:
                 direction: gpio.26
                 step: gpio.27
@@ -43,24 +30,15 @@ axes:
             cycle: 1
             seek_rate: 4000
             feed_rate: 400
-            pulloff: 15
-            
-            # I have to define a "cycle", though my homing method does not use it
-            # It uses the other three values on X and Y.  Z is hard coded to move
-            # to 20 degrees off the surface during my homing.
-            
-            # positive_direction: false
-            # The WebUI is not working properly at this time, or
-            # is built upside down (increasing Y, to me, should be UP)
-            # Been here, done that, needs to be figured out.
             
     y:
         steps_per_mm: 50
         max_rate: 4000
         acceleration: 200
         max_travel: 1000
-        soft_limits: true
-        gang0:
+        # soft_limits: true
+        motor0:
+            pulloff: 15
             standard_stepper:
                 direction: gpio.32
                 step: gpio.33
@@ -68,21 +46,20 @@ axes:
             cycle: 1
             seek_rate: 4000
             feed_rate: 400
-            pulloff: 15
             # positive_direction: false 
     z:
         steps_per_mm: 10
         max_rate: 10000
         acceleration: 1000
         max_travel: 90
-        soft_limits: true
-        gang0:
+        # soft_limits: true
+        motor0:
             rc_servo:
+                output_pin: gpio.13
+            
                 # cal_min and max are required, the defaults are 0!
-                pwm: gpio.13
-                cal_min: 1.0
-                cal_max: 1.0
-                
+                # cal_min: 1.0
+                # cal_max: 1.0    
                 # Note: Whitespace following (float values), particularly
                 # tab characters, will break the parser.
         # homing:
@@ -100,16 +77,14 @@ comms:
         ssid: GRBL_ESP32
 
 spi:
-    # ESP32_GRBL makes the assumption that the SDCard uses the
-    # "default" SPI CS pin.  What I am REALLY doing here is
-    # telling it the CS for the SDCard (and using the standard)
-    # defaults for the other pins) but you need to include
-    # all four (or none) pin definitions in this spi yaml section.
-    
+    # one has to tell FluidNC the default ESP32 SPI pins!
     miso: gpio.19
     mosi: gpio.23
     sck: gpio.18
+    
+sdcard:
+    # and then one can specify the specific cs used for the SDCard
     cs: gpio.21
-    
-    
+    card_detect: NO_PIN
+
   
