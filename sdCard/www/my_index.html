@@ -12796,7 +12796,7 @@ document.getElementById('prgfw').style.display = 'none';
 document.getElementById('uploadfw-button').style.display = 'none';
 document.getElementById('updatemsg').innerHTML = "";
 document.getElementById('fw-select').value = "";
-if (target_firmware == "grbl-embedded") document.getElementById('fw_update_dlg_title').innerHTML = translate_text_item("ESP3D Update").replace("ESP3D", "GRBL_ESP32");
+if (target_firmware == "grbl-embedded") document.getElementById('fw_update_dlg_title').innerHTML = translate_text_item("ESP3D Update").replace("ESP3D", "FluidNC");
 if (target_firmware == "marlin-embedded") document.getElementById('fw_update_dlg_title').innerHTML = translate_text_item("ESP3D Update").replace("ESP3D", "Marlin");
 showModal();
 }
@@ -18165,7 +18165,7 @@ document.getElementById('preferences_control_c_velocity_group').style.display = 
 document.getElementById('control_c_position_display').style.display = 'none';
 }
 document.getElementById('grblPanel').style.display = 'flex';
-document.getElementById('FW_github').href = 'https://github.com/bdring/Grbl_Esp32';
+document.getElementById('FW_github').href = 'https://github.com/bdring/FluidNC';
 document.getElementById('settings_filters').style.display = 'none';
 document.getElementById('control_x_position_label').innerHTML = "Xw";
 document.getElementById('control_y_position_label').innerHTML = "Yw";

@@ -1,14 +1,21 @@
 
 #include "vSensor.h"
-#include "v2812b.h"
 #include "vMachine.h"
+#include "my_ws2812b.h"
+
+#include <FluidNC.h>
+#include <Config.h>		// FluidNC
+#include <System.h>		// FluidNC
+#include <SDCard.h>
+
+
 
 #define DEBUG_SENSOR  0
 
 // prh Todo - paint outside stops (already used in homing)
 // prh Someday - use sensors for hard stops
 
-// GRBL assumes hardware switches for limits with clear ON/OFF states
+// FluidNC assumes hardware switches for limits with clear ON/OFF states
 // I have implemented optical sensors which detect a white strip on a belt
 // using analogRead(), along with a moving average and a pair of
 // thresholds.  It also needs to be called in a fairly tight timing loop.
@@ -17,13 +24,13 @@
 //
 // It is generally called as a real-time method, and/or when an ISR is triggered
 //
-// SOFT_LIMITS appear to check the current GRBL position against the defined
+// SOFT_LIMITS appear to check the current FluidNC position against the defined
 //      numerical limits, with either calls to limits_soft_check() or confusingly
 //      also via limitsCheckTravel() which appears to get callled generally
 //      and is bound weakly, and which I could easily override to just return
 //      false.
 //
-// If HARD_LIMITS, GRBL will install an interrupt handler for defined limit pins
+// If HARD_LIMITS, FluidNC will install an interrupt handler for defined limit pins
 //      and if CHECK_LIMITS_AT_INIT will call limits_getstate() at startup
 // 		and go into an alarm mode if any bit is set
 //
@@ -34,7 +41,7 @@
 //
 // if !HARD_LIMITS then limits_init() merely does a pinMode() on the pin
 //
-// Funny, the GRBL code still creates the limits_sw_queue and invariantly starts the
+// Funny, the FluidNC code still creates the limits_sw_queue and invariantly starts the
 // limitCheckTask() that would cycle every 32ms (DEBOUNCE_PERIOD), except that it blocks
 // on the limit_sw_queue which will never get anything from the ISR because
 // ENABLE_SOFTWARE_DEBOUNCE is not defined.  This is a waste of resources.
@@ -120,7 +127,7 @@ bool vSensor::pollState()
     {
         m_prev_state = m_state;
         #if DEBUG_SENSOR
-            grbl_sendf(CLIENT_SERIAL, "[MSG: vSensor[%s] %s]\r\n",
+            v_debug("vSensor[%s] %s",
                 m_axis_num ? "Y" : "X",
                 m_state ? "HIGH" : "LOW");
         #endif
@@ -130,86 +137,79 @@ bool vSensor::pollState()
 
 
 //------------------------------
-// system LED
+// LEDs
 //------------------------------
-#ifdef WITH_V2812B
 
-	#include <FluidNC.h>
-	#include <Config.h>
-	#include <System.h>
-	#include <SDCard.h>
-
-
-	#define LED_MODE_NONE   0x000000
-	#define LED_MODE_IDLE   0x003355	// cool cyan
-	#define LED_MODE_BUSY   0x555500    // yellow
-	#define LED_MODE_HOLD   0x005500    // bright green
-	#define LED_MODE_HOMING 0x550055	// bright magenta
-	#define LED_MODE_ALARM  0x770000    // blinking red
+#define LED_MODE_NONE   0x000000
+#define LED_MODE_IDLE   0x003355	// cool cyan
+#define LED_MODE_BUSY   0x555500    // yellow
+#define LED_MODE_HOLD   0x005500    // bright green
+#define LED_MODE_HOMING 0x550055	// bright magenta
+#define LED_MODE_ALARM  0x770000    // blinking red
 
 
-	void setSystemLED()
+void setSystemLED()
+{
+	static bool led_blink = false;
+	static uint32_t led_blink_time = 0;
+	static uint32_t led_mode = LED_MODE_NONE;
+	static State last_sys_state = State::Sleep;
+	static SDCard::State last_sd_state = SDCard::State::NotPresent;
+
+	SDCard *sdCard = config->_sdCard;
+	SDCard::State sd_state = sdCard ?
+		sdCard->get_state() :
+		SDCard::State::NotPresent;
+
+	if (last_sd_state != sd_state ||
+		last_sys_state != sys.state)
 	{
-		static bool led_blink = false;
-		static uint32_t led_blink_time = 0;
-		static uint32_t led_mode = LED_MODE_NONE;
-		static State last_sys_state = State::Sleep;
-		static SDCard::State last_sd_state = SDCard::State::NotPresent;
+		led_blink = false;
+		led_blink_time = 0;
 
-		SDCard *sdCard = config->_sdCard;
-		SDCard::State sd_state = sdCard ?
-			sdCard->get_state() :
-			SDCard::State::NotPresent;
-
-		if (last_sd_state != sd_state ||
-			last_sys_state != sys.state)
+		switch (sys.state)
 		{
-			led_blink = false;
-			led_blink_time = 0;
-
-			switch (sys.state)
-			{
-				case State::Sleep :
-				case State::Idle :
-					led_mode = sd_state == SDCard::State::Busy ?
-						LED_MODE_BUSY :
-						LED_MODE_IDLE;
-					break;
-				case State::ConfigAlarm :
-				case State::SafetyDoor :
-				case State::Alarm :
-					led_mode = LED_MODE_ALARM;
-					led_blink_time = millis() + 500;
-					break;
-				case State::Homing      :
-					led_mode = LED_MODE_HOMING;
-					break;
-				case State::Jog :
-				case State::Cycle :
-				case State::CheckMode :
-					led_mode = LED_MODE_BUSY;
-					break;
-				case State::Hold        :
-					led_mode = LED_MODE_HOLD;
-					break;
-			}
-
-			pixels.setBrightness(50);
-			pixels.setPixelColor(PIXEL_SYS_LED,led_mode);
-			pixels.show();
-
-			last_sd_state = sd_state;
-			last_sys_state = sys.state;
+			case State::Sleep :
+			case State::Idle :
+				led_mode = sd_state == SDCard::State::Busy ?
+					LED_MODE_BUSY :
+					LED_MODE_IDLE;
+				break;
+			case State::ConfigAlarm :
+			case State::SafetyDoor :
+			case State::Alarm :
+				led_mode = LED_MODE_ALARM;
+				led_blink_time = millis() + 500;
+				break;
+			case State::Homing      :
+				led_mode = LED_MODE_HOMING;
+				break;
+			case State::Jog :
+			case State::Cycle :
+			case State::CheckMode :
+				led_mode = LED_MODE_BUSY;
+				break;
+			case State::Hold        :
+				led_mode = LED_MODE_HOLD;
+				break;
 		}
-		else if (led_blink_time && millis() > led_blink_time)
-		{
-			led_blink_time = millis() + 500;
-			led_blink = !led_blink;
-			pixels.setPixelColor(PIXEL_SYS_LED,led_blink ? led_mode : 0);
-			pixels.show();
-		}
+
+		pixels.setBrightness(50);
+		pixels.setPixelColor(PIXEL_SYS_LED,led_mode);
+		pixels.show();
+
+		last_sd_state = sd_state;
+		last_sys_state = sys.state;
 	}
-#endif
+	else if (led_blink_time && millis() > led_blink_time)
+	{
+		led_blink_time = millis() + 500;
+		led_blink = !led_blink;
+		pixels.setPixelColor(PIXEL_SYS_LED,led_blink ? led_mode : 0);
+		pixels.show();
+	}
+}
+
 
 
 //-------------------------------------------------
@@ -227,19 +227,6 @@ void vSensorTask(void* pvParameters)
     x_sensor.init(0,X_VLIMIT_PIN);
     y_sensor.init(1,Y_VLIMIT_PIN);
 
-	#ifndef WITH_V2812B
-		pinMode(V_LIMIT_LED_PIN,OUTPUT);
-		digitalWrite(V_LIMIT_LED_PIN,0);
-	#endif
-
-	// for (int i=0; i<7; i++)
-	// {
-	// 	delay(2000);
-	// 	bool on = i & 1;
-	// 	useDigitalWrite(V_LIMIT_LED_PIN,on);
-	// 	v_info("led %d",on);
-	// }
-
 	v_info("vSensorTask running on core %d at priority %d",xPortGetCoreID(),uxTaskPriorityGet(NULL));
 
     while (true)
@@ -254,19 +241,14 @@ void vSensorTask(void* pvParameters)
         if (led_state != led_on)
         {
             led_state = led_on;
-			#ifdef WITH_V2812B
-				#if DEBUG_SENSOR
-					v_debug("setting pixels x=%d y=%d",x,y);
-				#endif
-				pixels.setPixelColor(PIXEL_LEFT_SENSOR, x ? 0xFF0000 : 0);
-				pixels.setPixelColor(PIXEL_RIGHT_SENSOR, y ? 0xFF0000 : 0);
-				pixels.show();
-			#else
-				digitalWrite(V_LIMIT_LED_PIN,led_on);
+
+			#if DEBUG_SENSOR
+				v_debug("setting pixels x=%d y=%d",x,y);
 			#endif
+			pixels.setPixelColor(PIXEL_LEFT_SENSOR, x ? 0xFF0000 : 0);
+			pixels.setPixelColor(PIXEL_RIGHT_SENSOR, y ? 0xFF0000 : 0);
+			pixels.show();
         }
-		#ifdef WITH_V2812B
-			setSystemLED();
-		#endif
+		setSystemLED();
     }
 }

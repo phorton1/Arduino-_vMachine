@@ -1,6 +1,6 @@
-// A maslow-like vMachine for the Esp32_Grbl project
+// A maslow-like vMachine for the FluidNC project
 // This version is built on the Yaml_Settings branch
-// of the Esp32_Grbl repository as of July 4, 2021
+// of the FluidNC repository as of July 4, 2021
 
 #pragma once
 
@@ -136,5 +136,5 @@ extern vMachine v_machine;
 extern void v_info(const char *format, ...);
 extern void v_debug(const char *format, ...);
 extern void v_error(const char *format, ...);
-    // decouple from calling Grbl_Esp32 output routines directly
+    // decouple from calling FluidNC output routines directly
     // at a small cost in code and stack space

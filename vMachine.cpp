@@ -1,7 +1,7 @@
-// vMachine - my minimalist port of maslow kinematics to the GRBL_ESP32 code base
+// vMachine - my minimalist port of maslow kinematics to the FluidNC code base
 
 // prh - notes on bringing up to YAML_SETTINGS branch
-// When you first boot GRBL_ESP32 there is no config.yaml on the SPIFFS
+// When you first boot FluidNC there is no config.yaml on the SPIFFS
 // I had to modify config.yaml to set the STA/SSID though I can set the
 // password via the serial port.
 
@@ -12,18 +12,18 @@
 #include "vMachine.h"
 #include "vKinematics.h"
 #include "vSensor.h"
-#include "v2812b.h"
+#include "my_ws2812b.h"
 
 #include <FluidNC.h>
-#include <Config.h>
-#include <System.h>
-#include <SDCard.h>
-#include <Report.h>
-#include <Logging.h>
-#include <Planner.h>
-#include <Protocol.h>
-#include <MotionControl.h>
-#include <GLimits.h>
+#include <Config.h>             // FluidNC
+#include <System.h>             // FluidNC
+#include <SDCard.h>             // FluidNC
+#include <Report.h>             // FluidNC
+#include <Logging.h>            // FluidNC
+#include <Planner.h>            // FluidNC
+#include <Protocol.h>           // FluidNC
+#include <MotionControl.h>      // FluidNC
+#include <GLimits.h>            // FluidNC
 
 
 #define WITH_MEMORY_PROBE 0
@@ -49,9 +49,8 @@ vMachine v_machine;
 Kinematics	kinematics;
 bool in_homing = false;
 
-#ifdef WITH_V2812B
-	Adafruit_NeoPixel pixels(NUM_PIXELS,V_LIMIT_LED_PIN);
-#endif  // WITH_V2812B
+Adafruit_NeoPixel pixels(NUM_PIXELS,V_LIMIT_LED_PIN);
+
 
 //-----------------------------------------
 // decoupled output routines
@@ -106,7 +105,7 @@ static inline unsigned long mulRound(float *vals, int axis)
 
 
 //---------------------------------------------------------------------
-// machine_init() - override of weakly bound Grbl_Esp32 method
+// machine_init() - override of weakly bound FluidNC method
 //---------------------------------------------------------------------
 // main entry point to my stuff
 
@@ -114,7 +113,7 @@ static inline unsigned long mulRound(float *vals, int axis)
 #if INIT_SDCARD_AT_STARTUP
 	void debug_start_sdcard()
 	{
-		// The "normal" grbl_esp32 code does not initialize the SD Card
+		// The "normal" FluidNC code does not initialize the SD Card
 		// until it is accessed via a [ESPxxx] command from the WebUI or
 		// via [ESP210] or [ESP420].  I modified the webUI to start up
 		// with the file list initialized.
@@ -141,7 +140,7 @@ static inline unsigned long mulRound(float *vals, int axis)
 
 		#else	// relies on vMachine.yaml spi setup
 
-			// The GRBL way of initializing the SD Card is to call
+			// The FluidNC way of initializing the SD Card is to call
 			// SDState state = get_sd_state(true) and then check for
 			// SDState::NotPresent.  Otherwise it's there and if not
 			// SDState::Idle it is considered busy. They then call
@@ -173,12 +172,12 @@ static inline unsigned long mulRound(float *vals, int axis)
 			v_info("Total space:  %lluMB", (SD.totalBytes()+1024*1024-1) / (1024 * 1024));
 			v_info("Used space:   %lluMB", (SD.usedBytes()+1024*1024-1) / (1024 * 1024));
 
-			// Grbl_Esp32 closes the SD Card after every use.
-			// SDCard::State() and it's usage in Grbl for me to proceed in
+			// FluidNC closes the SD Card after every use.
+			// SDCard::State() and it's usage in FluidNC for me to proceed in
 			// a sane manner.
 
 			#if !INIT_SDCARD_OLD_FASHIONED_WAY
-				SD.end();	// as per the GRBL way
+				SD.end();	// as per the FluidNC way
 			#endif
 		}
 	}
@@ -240,7 +239,7 @@ void setDefaultPosition()
 
 
 void machine_init()
-	// override weakly bound method called from Grbl.cpp
+	// override weakly bound method called from FluidNC
 {
 	v_info("vMachine.cpp::machine_init() on core %d at priority %d %d/%dK",
 		xPortGetCoreID(),
@@ -272,7 +271,7 @@ void machine_init()
 		NULL,				// parameters
 		1,  				// priority
 		NULL,				// returned handle
-		0);					// core 1=main Grbl_Esp32 thread/task, 0=my UI and other tasks
+		0);					// core 1=main FluidNC thread/task, 0=my UI and other tasks
 
 	delay(400);		// to allow task to display it's starup message
 
@@ -287,7 +286,7 @@ void machine_init()
 			NULL,				// parameters
 			1,  				// priority
 			NULL,				// returned handle
-			0);					// core 1=main Grbl_Esp32 thread/task, 0=my UI and other tasks
+			0);					// core 1=main FluidNC thread/task, 0=my UI and other tasks
 	#endif
 
 	v_info("vMachine.cpp::machine_init() finished %d/%dK",V_SDCARD_CS,xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
@@ -297,7 +296,7 @@ void machine_init()
 //--------------------------------------------------------------------------------------------------------
 // cartesian_to_motors - override weekly bound method
 //--------------------------------------------------------------------------------------------------------
-// the grbl method params are ineptly named and parameterized
+// the FluidNC method params are ineptly named and parameterized
 // you have cartesian_to_motors(target,position)
 // where input is first (target) and the "cartesian" and
 // position is "motors", second.
@@ -482,7 +481,7 @@ void motors_to_cartesian(float* cartesian, float* motors, int n_axis)
 //--------------------------------------------------------------------------------------------------------
 // Homing
 //--------------------------------------------------------------------------------------------------------
-// Unfortunately we cannot easily use the native GRBL homing code because
+// Unfortunately we cannot easily use the native FluidNC homing code because
 // of our coupled axis ... we have to let out one to home the other ....
 // AND we have to do two separate homes ...
 //
@@ -549,7 +548,7 @@ bool vHome(int axis)
 	// this is unduly complicated due to the prodiguous
 	//     use of global variables, undocumented assumptions about state,
 	//     and the generally horrible encapsulation of functionality in
-	//     the GRBL code.
+	//     the FluidNC code.
 	// all I wanted to do was move the steppers and check for the limit
 	//     switches (or end of a travel length)
 	// but you have to go through the "planner", and it makes assumptions
@@ -590,9 +589,9 @@ bool vHome(int axis)
 	// In the Yaml_Settings branch they are per axis.
 	//
 	// There is no specification document that lists the change, esp inasmuch
-	// as there was no specificiation document that listed the main branch grbl_esp32 settings,
+	// as there was no specificiation document that listed the main branch FluidNC settings,
 	// much like there is no specification document for the Protocol, or, in fact
-	// what constitutes "GCode" as far as "GRBL" itself (or the esp32 branch),
+	// what constitutes "GCode" as far as "FluidNC" itself,
 	// or for that matter, the design or architecture of either repository, much
 	// less a meaningful roadmap for the envisioned life cycle of the codebase.
 

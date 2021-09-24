@@ -57,7 +57,7 @@ int prh_debug_forward = 0;
 // These chain lengths are stored in the global int32 "sys_position"
 //    as the number of steps on each stepper motor.
 //
-//    Given the grbl "steps/mm" setting (50) the chain lengths
+//    Given the FluidNC "steps/mm" setting (50) the chain lengths
 //    in steps can be converted to mm's and vice versa.
 //
 //    When in mm's the chain lengths are refered to as the
@@ -75,7 +75,7 @@ int prh_debug_forward = 0;
 // approximated from the chain lengths via the motors_to_cartesian()
 // method that is ONLY called for reporting .. never for machine
 // movements.  There are also storable "work" coordinate systems,
-// that are managed by GRBL (see %54, $#, etc) but they are not
+// that are managed by FluidNC (see %54, $#, etc) but they are not
 // important for this discussion.
 
 

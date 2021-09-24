@@ -37,7 +37,7 @@ for all kinds of behaviors.
 
 All SD Card file operations SHALL go through the SDCard object.
 
-The SDCard object SHALL own all the files opened by GRBL_ESP32 at any time
+The SDCard object SHALL own all the files opened by FluidNC at any time
 so that it can invalidate them (notify clients) upon detecting an SDCard
 removal (error).  At this time removing the SD card while printing does
 nothing.
@@ -74,7 +74,7 @@ The field is vast, wide, and wild.
 
 ### Clients (mulitple concurrent interfaces)
 
-ESP32_GRBL supports a plethora of ways in which a client can access it.
+FluidNC supports a plethora of ways in which a client can access it.
 These specificially include the USB Serial Port, communicating with it
 via Wifi at a given IP address using Sockets, HTTP or Telnet, and connecting
 as a Bluetooth device (a RFCONN Serial port, I believe).
@@ -90,7 +90,7 @@ directed to serial communications over one of the following "clients".
     #define CLIENT_TELNET 3
     #define CLIENT_INPUT 4
 
-CLIENT_INPUT appears to be ONLY for internal use by the grbl_esp32
+CLIENT_INPUT appears to be ONLY for internal use by the FluidNC
 code as a way to push "user defined macros" to the gcode machine
 at the behest of the other clients.
 
@@ -124,10 +124,10 @@ the end of the stream.  In files, at least, no gcodes (lines) after M30 or a
 second percent sign "are to be acted upon".
 
 Also, please note the weird usage of the terminology "upload" in the
-grbl web/API.   An http "upload" request from a client is used, for
+FluidNC web/API.   An http "upload" request from a client is used, for
 example, to return a directory listing, delete files, etc.  I'm
 still looking for "download" in this twisted sense of things.
-GRBL sees things from it's own view, I guess, so "uploading"
+FluidNC sees things from it's own view, I guess, so "uploading"
 means that the CLIENT is uploading ... whereas the rest of the world
 would expect the opposited sense.
 
@@ -144,7 +144,7 @@ The SD Card appears to be an after-thought.
 The SD Card implementation does not follow any known standard and,
 in my view, fails to exhibit reasonable behavior.
 
-The fallback position of GRBL_ESP32 is that only one "client"
+The fallback position of FluidNC is that only one "client"
 can access the SD Card at a given time, the cannonical case being
 when it "runs" a gcode file from the SD Card, then (a) it locks
 out any "gcode execution" except for "immediate commands" from any other
@@ -171,7 +171,7 @@ access different files. NVS is also thread safe (all operations are
 serialized).Apr 4, 2019"
 
 As a result of the lame implementation, I really don't like the way
-GRBL_ESP32 assumes that it can (must) call SD.end() and SD.begin()
+FluidNC assumes that it can (must) call SD.end() and SD.begin()
 asynchronously based upon client events.  The lame implementation
 leads directly to the restrictive, complicated, and inconsistent
 behavior.
@@ -182,7 +182,7 @@ behavior.
 GCODE commands
 
     There do not appear to be any G or M codes associated
-    with the SD Card supported by ESP32_GRBL
+    with the SD Card supported by FluidNC
 
 ESP/Extended Commands
 
@@ -262,7 +262,7 @@ CLIENT_INPUT - Internal Behavior (macro files)
 
 For completeness, please note the following RepRap M codes which are
 NOT part of GRBL ... these codes have completely different semantics
-in GRBL and there are no equivilants in ESP32_GRBL:
+in GRBL and there are no equivilants in FluidNC:
 
 
     M21 Initialise (mount) SD Card
@@ -376,14 +376,14 @@ or via the header/footer in inkscape
 sys_position = an array of int32s representing the stepper motor position in steps
 motor position = floats in mm's == sys_position / axis_settings->steps_per_mm
 machine position = floats called "mpos" which is the cartesian coordinate within the work area,
-work position =  grbl floats (wpos) that lets you set 0,0 relative to the machine area.
+work position =  floats (wpos) that lets you set 0,0 relative to the machine area.
 
 The "motor position" and sys_position are representative of the chain (cable) lengths.
 
 The system does not maintain the motor, machine, or work positions.
 It only maintains the int32 sys_positions.
 
-If GRBL needs to do something in the machine/work coordinate systems (i.e. move to the
+If FluidNC needs to do something in the machine/work coordinate systems (i.e. move to the
 next point in some gcode) it calls cartesianToMotors() to get the "motor positions"
 for that coordinate, which it then turns back into sys_position steps for planning
 and actual movement.
@@ -391,7 +391,7 @@ and actual movement.
 For reporting, sys_position ==> motor position is turned into the "machine position" by
 calling motors_to_cartesian() (forward kinematics), which in turn, does
 iterative calls to the reverse kinematics to find a "machine_position" that matches
-the motor position.  These forward kinematics are normally not needed to run GRBL,
+the motor position.  These forward kinematics are normally not needed to run FluidNC,
 they are used only for reporting.
 
 
@@ -493,7 +493,7 @@ something that shows it working, like 1000mm (or more) per minute.
 
 1000 is a little slow for actual work.  4000 is better.
 
-If the motor moves 90 units (which are degrees but GRBL thinks are mms),
+If the motor moves 90 units (which are degrees but FluidNC thinks are mms),
 and the feed rate is 1000mm/minute, which is about 60mm/second, it would
 take 1.5 seconds to move 90 degrees.  If my pen needs to move, say 20 degrees
 between a safe place and the work surface that would be 1/4 t 1/2 second
@@ -541,7 +541,7 @@ per feed move, and if the max_rate is 4000mm/minute, pretty quick to retract.
    But the servos are wonky at those settings.
 
    Note that it would be simpler to just send the desired PWM consistently
-   but GRBL feels the need to do it incrementally (with accelleration) which
+   but FluidNC feels the need to do it incrementally (with accelleration) which
    really mucks thigs up, I think, causing, probably, the jumping around.
    To save, i guess, leaving the PWM signal from going out and parking the servos.
    I'm wonked out!
@@ -575,7 +575,7 @@ pins are used.  I list them here as a reminder
     #define SPI_MISO     GPIO_NUM_19
     #define SPI_MOSI     GPIO_NUM_23
 
-There is some kind of "SDCard detection scheme" in grbl_esp32
+There is some kind of "SDCard detection scheme" in FluidNC
 that I do not understand.   In any case, you should leave
 SDCARD_DET_PIN undefined.  At one point I tried the following
 and it did not help: $define SDCARD_DET_PIN GPIO_NUM_5
@@ -623,11 +623,11 @@ from the WebUI (websockets)
 FINALLY, I noticed there was a stack overflow in the clientCheckTask method.
 from the Serial Monitor. I copied from it, and searched for:
 
-  grbl_esp32 ***ERROR*** A stack overflow in task clientCheckTask has been detected.
+  FluidNC ***ERROR*** A stack overflow in task clientCheckTask has been detected.
 
 I got hits on other programs that had tasks with stack overflows and they had solved
 them by changing the stacksize parameter to the (Esperif Systems) "xTaskCreatePinnedToCore"
-method.  I searched grbl_esp32 for "xTaskCreatePinnedToCore" and found the one for
+method.  I searched FluidNC for "xTaskCreatePinnedToCore" and found the one for
 clientCheckTask in Serial.cpp.   I doubled the stack size parameter from 4096 to 8192
 and the WebUI, as is, started working.
 

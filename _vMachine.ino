@@ -1,13 +1,13 @@
 //----------------------------------------------------
 // vMachine.ino
 //----------------------------------------------------
-// A v-type CNC machine based on the Grbl_Esp32 library.
+// A v-type CNC machine based on the FluidNC library.
 
-#include <FluidNC.h>        // for main_init() and run_once()
-#include <Config.h>         // for ENABLE_TOUCH_UI
-#include <Report.h>         // for v_debug()
+#include <FluidNC.h>
+#include <Config.h>         // FluidNC
+#include <Report.h>         // FluidNC
 
-#include "vMachine.h"       // for V_SDCARD_CS (must come after Grbl.h
+#include "vMachine.h"       // for V_SDCARD_CS (must come after FluidNC.h
 
 #define INIT_SD_DURING_SETUP
 
@@ -22,7 +22,7 @@
     #include <FluidNC_UI.h>
 
     void display_init()
-        // override weak definition in Grbl_Esp32
+        // override weak definition in FluidNC
         // called after the Serial port Client has been created
     {
         v_debug("vMachine.ino display_init() started");
@@ -56,6 +56,6 @@ void loop()
 {
     v_debug("vMachine.ino loop() started %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
     run_once();
-    delay(1000);    // for display of following message to work with Grbl_Esp32 asynch debug output
+    delay(1000);    // for display of following message to work with FluidNC asynch debug output
     v_debug("vMachine.ino loop() completed %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
  }
