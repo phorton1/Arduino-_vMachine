@@ -4,10 +4,10 @@
 #include "my_ws2812b.h"
 
 #include <FluidNC.h>
-#include <Config.h>		// FluidNC
-#include <System.h>		// FluidNC
-#include <SDCard.h>
-
+#include <Config.h>				// FluidNC
+#include <System.h>				// FluidNC
+#include <SDCard.h>				// FluidNC
+#include <FluidDebug.h>         // FluidNC_extensions
 
 
 #define DEBUG_SENSOR  0
@@ -87,7 +87,7 @@ void vSensor::init(int axis_num, int pin)
     m_axis_num = axis_num;
     pinMode(m_pin,INPUT);
     memset(m_buf,0,VSENSOR_BUFSIZE * sizeof(int));
-	v_info("vSensor(%d) started on pin(%d)",axis_num,pin);
+	g_info("vSensor(%d) started on pin(%d)",axis_num,pin);
 }
 
 
@@ -105,7 +105,7 @@ bool vSensor::pollState()
     // poll so-as to preserve timing.
 {
     int value = analogRead(m_pin);
-    // v_debug("vSensor[%s] %d]\r\n",m_axis_num ? "Y" : "X",value);
+    // g_debug("vSensor[%s] %d]\r\n",m_axis_num ? "Y" : "X",value);
 
     m_value += value;
     m_value -= m_buf[m_ptr];
@@ -127,7 +127,7 @@ bool vSensor::pollState()
     {
         m_prev_state = m_state;
         #if DEBUG_SENSOR
-            v_debug("vSensor[%s] %s",
+            g_debug("vSensor[%s] %s",
                 m_axis_num ? "Y" : "X",
                 m_state ? "HIGH" : "LOW");
         #endif
@@ -227,14 +227,14 @@ void vSensorTask(void* pvParameters)
     x_sensor.init(0,X_VLIMIT_PIN);
     y_sensor.init(1,Y_VLIMIT_PIN);
 
-	v_info("vSensorTask running on core %d at priority %d",xPortGetCoreID(),uxTaskPriorityGet(NULL));
+	g_info("vSensorTask running on core %d at priority %d",xPortGetCoreID(),uxTaskPriorityGet(NULL));
 
     while (true)
     {
         vTaskDelay(VTASK_DELAY_MS / portTICK_PERIOD_MS);
         bool x = x_sensor.pollState();
         bool y = y_sensor.pollState();
-        // v_debug("vSensor x(%d) y(%d)",x,y);
+        // g_debug("vSensor x(%d) y(%d)",x,y);
 
         bool led_on = x || y;
         static bool led_state = 0;
@@ -243,7 +243,7 @@ void vSensorTask(void* pvParameters)
             led_state = led_on;
 
 			#if DEBUG_SENSOR
-				v_debug("setting pixels x=%d y=%d",x,y);
+				g_debug("setting pixels x=%d y=%d",x,y);
 			#endif
 			pixels.setPixelColor(PIXEL_LEFT_SENSOR, x ? 0xFF0000 : 0);
 			pixels.setPixelColor(PIXEL_RIGHT_SENSOR, y ? 0xFF0000 : 0);

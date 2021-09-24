@@ -5,7 +5,7 @@
 
 #include <FluidNC.h>
 #include <Config.h>         // FluidNC
-#include <Report.h>         // FluidNC
+#include <FluidDebug.h>     // FluidNC_extensions
 
 #include "vMachine.h"       // for V_SDCARD_CS (must come after FluidNC.h
 
@@ -25,9 +25,9 @@
         // override weak definition in FluidNC
         // called after the Serial port Client has been created
     {
-        v_debug("vMachine.ino display_init() started");
+        g_debug("vMachine.ino display_init() started");
         FluidNC_UI_init();
-        v_debug("vMachine.ino display_init() finished");
+        g_debug("vMachine.ino display_init() finished");
     }
 
 #endif
@@ -44,18 +44,18 @@ void setup()
     main_init();
 
     #ifdef INIT_SD_DURING_SETUP
-        v_debug("vMachine.ino SD.begin() %s during setup()",sd_ok?"WORKED OK":"FAILED");
+        g_debug("vMachine.ino SD.begin() %s during setup()",sd_ok?"WORKED OK":"FAILED");
     #endif
 
-    v_debug("vMachine.ino setup() completed %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
+    g_debug("vMachine.ino setup() completed %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
 }
 
 
 
 void loop()
 {
-    v_debug("vMachine.ino loop() started %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
+    g_debug("vMachine.ino loop() started %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
     run_once();
     delay(1000);    // for display of following message to work with FluidNC asynch debug output
-    v_debug("vMachine.ino loop() completed %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
+    g_debug("vMachine.ino loop() completed %d/%dK",xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
  }

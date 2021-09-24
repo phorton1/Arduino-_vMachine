@@ -1,13 +1,10 @@
 // vMachineSettings
 
-#define IMPLEMENT_YAML_OVERRIDES  1
-
 #include "vMachine.h"
-#if IMPLEMENT_YAML_OVERRIDES
-	#define g_debug v_debug
-		// what a mess
-	#include <YamlOverrides.h>
-#endif
+#include <FluidDebug.h>     	// FluidNC_extensions
+#include <YamlOverrides.h>		// FluidNC_extensions
+	// YamlOverrides.h can be commented out to
+	// avoid linking in the WEAK_LINK overrides
 
 #define DEBUG_YAML 						0
 #define CONFIGURE_WIFI_EXPERIMENT   	0
@@ -109,7 +106,7 @@
 void vMachine::afterParse() // override
 {
 	#if DEBUG_YAML
-		v_debug("---> vMachine::afterParse() called");
+		g_debug("---> vMachine::afterParse() called");
 	#endif
 
 	#if CONFIGURE_WIFI_EXPERIMENT
@@ -159,7 +156,7 @@ void vMachine::group(Configuration::HandlerBase& handler) // override
 			case Configuration::HandlerType::Generator	:  htype="Generator";  break;
 			case Configuration::HandlerType::Validator	:  htype="Validator";  break;
 		}
-		v_debug("---> vMachine::group(handler=%s) called",htype);
+		g_debug("---> vMachine::group(handler=%s) called",htype);
 	#endif
 
 

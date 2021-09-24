@@ -18,20 +18,19 @@
 #include <Config.h>             // FluidNC
 #include <System.h>             // FluidNC
 #include <SDCard.h>             // FluidNC
-#include <Report.h>             // FluidNC
 #include <Logging.h>            // FluidNC
 #include <Planner.h>            // FluidNC
 #include <Protocol.h>           // FluidNC
 #include <MotionControl.h>      // FluidNC
 #include <GLimits.h>            // FluidNC
-
+#include <FluidDebug.h>     	// FluidNC_extensions
 
 #define WITH_MEMORY_PROBE 0
 
 
-#define DEBUG_VHOME   	2		// can be up to 2
-#define DEBUG_VREVERSE  0
-#define DEBUG_VFORWARD  0		// can be up to 2
+#define DEBUG_VHOME   	1		// can be up to 2
+#define DEBUG_VREVERSE  3
+#define DEBUG_VFORWARD  3		// can be up to 2
 	// debugging the inverse kinematics may introduce
 	// timing problems that can crash the machine ..
 
@@ -50,41 +49,6 @@ Kinematics	kinematics;
 bool in_homing = false;
 
 Adafruit_NeoPixel pixels(NUM_PIXELS,V_LIMIT_LED_PIN);
-
-
-//-----------------------------------------
-// decoupled output routines
-//-----------------------------------------
-
-void v_debug(const char *format, ...)
-{
-	va_list var;
-	va_start(var, format);
-	char display_buffer[255];
-	vsprintf(display_buffer,format,var);
-	log_debug(display_buffer);
-	va_end(var);
-}
-
-void v_info(const char *format, ...)
-{
-	va_list var;
-	va_start(var, format);
-	char display_buffer[255];
-	vsprintf(display_buffer,format,var);
-	log_info(display_buffer);
-	va_end(var);
-}
-
-void v_error(const char *format, ...)
-{
-	va_list var;
-	va_start(var, format);
-	char display_buffer[255];
-	vsprintf(display_buffer,format,var);
-	log_error(display_buffer);
-	va_end(var);
-}
 
 
 
@@ -130,10 +94,10 @@ static inline unsigned long mulRound(float *vals, int axis)
 		#if INIT_SDCARD_OLD_FASHIONED_WAY
 
 			// Call SD.begin() directly.
-			v_info("starting SD Card on pin(%d) %d/%dK",V_SDCARD_CS,xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
+			g_info("starting SD Card on pin(%d) %d/%dK",V_SDCARD_CS,xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
 			if (!SD.begin(V_SDCARD_CS))
 			{
-				v_info("SD.begin() failed");
+				g_info("SD.begin() failed");
 			}
 			else
 			{
@@ -146,31 +110,31 @@ static inline unsigned long mulRound(float *vals, int axis)
 			// SDState::Idle it is considered busy. They then call
 			// SD.end() after each transaction.
 
-			v_info("starting sdCard on pin from Yaml configuration");
+			g_info("starting sdCard on pin from Yaml configuration");
 			SDCard::State state = config->_sdCard->begin(SDCard::State::Idle);
 			// info_debug("machine_init() get_sd_state() returned %d",state);
 			if (state == SDCard::State::NotPresent)
 			{
-				v_info("SD Card Not Present");
+				g_info("SD Card Not Present");
 			}
 			else
 			{
 				if (state != SDCard::State::Idle)
-					v_info("SD Card BUSY");
+					g_info("SD Card BUSY");
 
 		#endif
 
 			uint8_t cardType = SD.cardType();
-			v_info("SD Card Type: %s",
+			g_info("SD Card Type: %s",
 				cardType == CARD_NONE ? "NONE" :
 				cardType == CARD_MMC  ? "MMC" :
 				cardType == CARD_SD   ? "SDSC" :
 				cardType == CARD_SDHC ? "SDHC" :
 				"UNKNOWN");
 			uint64_t cardSize = SD.cardSize() / (1024 * 1024);
-			v_info("SD Card Size: %lluMB", cardSize);
-			v_info("Total space:  %lluMB", (SD.totalBytes()+1024*1024-1) / (1024 * 1024));
-			v_info("Used space:   %lluMB", (SD.usedBytes()+1024*1024-1) / (1024 * 1024));
+			g_info("SD Card Size: %lluMB", cardSize);
+			g_info("Total space:  %lluMB", (SD.totalBytes()+1024*1024-1) / (1024 * 1024));
+			g_info("Used space:   %lluMB", (SD.usedBytes()+1024*1024-1) / (1024 * 1024));
 
 			// FluidNC closes the SD Card after every use.
 			// SDCard::State() and it's usage in FluidNC for me to proceed in
@@ -193,11 +157,11 @@ static inline unsigned long mulRound(float *vals, int axis)
 	{
 		vTaskDelay(200/portTICK_PERIOD_MS);
 
-		v_info("vMemoryProbeTask running on core %d at priority %d",xPortGetCoreID(),uxTaskPriorityGet(NULL));
+		g_info("vMemoryProbeTask running on core %d at priority %d",xPortGetCoreID(),uxTaskPriorityGet(NULL));
 
 		while (true)
 		{
-			v_debug("mem[ %d secs] %d/%dK",millis()/1000,xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
+			g_debug("mem[ %d secs] %d/%dK",millis()/1000,xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
 			vTaskDelay(15000 / portTICK_PERIOD_MS);
 		}
     }
@@ -227,7 +191,7 @@ void setDefaultPosition()
 	motor_steps[Y_AXIS] = mulRound(position,Y_AXIS);
 	motor_steps[Z_AXIS] = mulRound(position,Z_AXIS);
 
-	v_debug("init motor_steps(%d,%d,%d) mms(%f,%f,%f)",
+	g_debug("init motor_steps(%d,%d,%d) mms(%f,%f,%f)",
 		motor_steps[X_AXIS],
 		motor_steps[Y_AXIS],
 		motor_steps[Z_AXIS],
@@ -241,7 +205,7 @@ void setDefaultPosition()
 void machine_init()
 	// override weakly bound method called from FluidNC
 {
-	v_info("vMachine.cpp::machine_init() on core %d at priority %d %d/%dK",
+	g_info("vMachine.cpp::machine_init() on core %d at priority %d %d/%dK",
 		xPortGetCoreID(),
 		uxTaskPriorityGet(NULL),
 		xPortGetFreeHeapSize()/1024,
@@ -289,7 +253,7 @@ void machine_init()
 			0);					// core 1=main FluidNC thread/task, 0=my UI and other tasks
 	#endif
 
-	v_info("vMachine.cpp::machine_init() finished %d/%dK",V_SDCARD_CS,xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
+	g_info("vMachine.cpp::machine_init() finished %d/%dK",V_SDCARD_CS,xPortGetFreeHeapSize()/1024,xPortGetMinimumEverFreeHeapSize()/1024);
 }
 
 
@@ -320,7 +284,7 @@ bool cartesian_to_motors(float* target, plan_line_data_t* pl_data, float* positi
 		// and/or whether they need to be zero.
 
 	#if DEBUG_VREVERSE
-		v_debug("cartesian_to_motors(%f,%f,%f) old(%f,%f,%f) feed=%f",
+		g_debug("cartesian_to_motors(%f,%f,%f) old(%f,%f,%f) feed=%f",
 			target[X_AXIS],
 			target[Y_AXIS],
 			target[Z_AXIS],
@@ -330,7 +294,7 @@ bool cartesian_to_motors(float* target, plan_line_data_t* pl_data, float* positi
 			pl_data->feed_rate);
 	#endif
 	#if DEBUG_VREVERSE>1
-		v_debug("   ctm starting sys_lengths(%f,%f,%f) sys_pos(%d,%d,%d)",
+		g_debug("   ctm starting sys_lengths(%f,%f,%f) sys_pos(%d,%d,%d)",
 			motor_steps[X_AXIS] / STEPS_PER_MM(X_AXIS),
 			motor_steps[Y_AXIS] / STEPS_PER_MM(Y_AXIS),
 			motor_steps[Z_AXIS] / STEPS_PER_MM(Z_AXIS),
@@ -390,7 +354,7 @@ bool cartesian_to_motors(float* target, plan_line_data_t* pl_data, float* positi
 	float zinc = zdist/num_segs;
 
 	#if DEBUG_VREVERSE
-		v_debug("   ctm doing %d segments with incs(%f,%f,%f)",
+		g_debug("   ctm doing %d segments with incs(%f,%f,%f)",
 			num_segs,
 			xinc,
 			yinc,
@@ -411,7 +375,7 @@ bool cartesian_to_motors(float* target, plan_line_data_t* pl_data, float* positi
 		new_position[Z_AXIS] = position[Z_AXIS];
 
 		#if DEBUG_VREVERSE>1
-			v_debug("   ctm seg(%d) to(%f,%f,%f) lengths(%f,%f,%f)",
+			g_debug("   ctm seg(%d) to(%f,%f,%f) lengths(%f,%f,%f)",
 				seg_num,
 				position[X_AXIS],
 				position[Y_AXIS],
@@ -428,7 +392,7 @@ bool cartesian_to_motors(float* target, plan_line_data_t* pl_data, float* positi
 
 
 	#if DEBUG_VREVERSE>1
-		v_debug("cartesian_to_motors final lengths(%f,%f,%f) steps(%d,%d,%d)",
+		g_debug("cartesian_to_motors final lengths(%f,%f,%f) steps(%d,%d,%d)",
 			new_position[X_AXIS],
 			new_position[Y_AXIS],
 			new_position[Z_AXIS],
@@ -449,7 +413,7 @@ void motors_to_cartesian(float* cartesian, float* motors, int n_axis)
 {
 	#if DEBUG_VFORWARD
 		if (prh_debug_forward)
-			v_debug("motors_to_cartesian(%f,%f,%f) old(%f,%f,%f)",
+			g_debug("motors_to_cartesian(%f,%f,%f) old(%f,%f,%f)",
 				motors[X_AXIS],
 				motors[Y_AXIS],
 				motors[Z_AXIS],
@@ -467,7 +431,7 @@ void motors_to_cartesian(float* cartesian, float* motors, int n_axis)
 
 	#if DEBUG_VFORWARD
 		if (prh_debug_forward)
-			v_debug("motors_to_cartesian(%f,%f,%f) final(%f,%f,%f)",
+			g_debug("motors_to_cartesian(%f,%f,%f) final(%f,%f,%f)",
 				motors[X_AXIS],
 				motors[Y_AXIS],
 				motors[Z_AXIS],
@@ -533,7 +497,7 @@ float *my_get_mpos()
 
 void debug_position(const char *what)
 {
-	v_debug("      %-9s sys_pos(%d,%d,%d) sys_lengths(%f,%f,%f)",
+	g_debug("      %-9s sys_pos(%d,%d,%d) sys_lengths(%f,%f,%f)",
 		what,
 		motor_steps[X_AXIS],
 		motor_steps[Y_AXIS],
@@ -556,7 +520,7 @@ bool vHome(int axis)
 	//     of complexity to accomlish this simple task.
 {
 	#if DEBUG_VHOME > 1
-		v_debug("vHome(%s)",axis?"Y":"X");
+		g_debug("vHome(%s)",axis?"Y":"X");
 		debug_position("start");
 	#endif
 
@@ -652,7 +616,7 @@ bool vHome(int axis)
 	int home_error = 0;
 
 	#if DEBUG_VHOME > 1
-		v_debug("   vHome phase(%d)  rate(%f)  axis_travel(%f) other_axis_travel(%f)",
+		g_debug("   vHome phase(%d)  rate(%f)  axis_travel(%f) other_axis_travel(%f)",
 			home_phase,
 			pl_data->feed_rate,
 			axis_travel,
@@ -674,7 +638,7 @@ bool vHome(int axis)
 		if (rtReset)
 		{
 			#if DEBUG_VHOME
-				v_debug("   vHome rtReset==HomingFailReset 6");
+				g_debug("   vHome rtReset==HomingFailReset 6");
 			#endif
 			rtAlarm = ExecAlarm::HomingFailReset;		// 6
 			home_error = 1;
@@ -684,7 +648,7 @@ bool vHome(int axis)
 			if (!(home_phase & 1))
 			{
 				#if DEBUG_VHOME
-					v_debug("   vHome rtCycleStop==HomingFailApproach 9");
+					g_debug("   vHome rtCycleStop==HomingFailApproach 9");
 				#endif
 				rtAlarm = ExecAlarm::HomingFailApproach;   // 9
 				home_error = 1;
@@ -692,7 +656,7 @@ bool vHome(int axis)
 			else if (limit_state & bit_axis)
 			{
 				#if DEBUG_VHOME
-					v_debug("   vHome rtCycleStop==HomingFailPulloff 8");
+					g_debug("   vHome rtCycleStop==HomingFailPulloff 8");
 				#endif
 				rtAlarm = ExecAlarm::HomingFailPulloff;	// 8
 				home_error = 1;
@@ -759,7 +723,7 @@ bool vHome(int axis)
 				if (next_phase)		// if still going
 				{
 					#if DEBUG_VHOME > 1
-						v_debug("   vHome next_phase(%d)  rate(%f)  axis_travel(%f)",
+						g_debug("   vHome next_phase(%d)  rate(%f)  axis_travel(%f)",
 							home_phase,
 							pl_data->feed_rate,
 							axis_travel);
@@ -799,7 +763,7 @@ bool vHome(int axis)
 		// motors_set_homing_mode(cycle_mask, false);
 		// tell motors homing is done
 
-		v_debug("Homing fail");
+		g_debug("Homing fail");
 			// prh - this is not an official error or alarm.
 			// The alarm code has already been set above.
 		mc_reset();
@@ -810,7 +774,7 @@ bool vHome(int axis)
 	{
 		#if DEBUG_VHOME > 1
 			float *dbg_mms = my_get_mpos();
-			v_debug("   vHome(%s) finished",axis?"Y":"X");
+			g_debug("   vHome(%s) finished",axis?"Y":"X");
 			debug_position("end");
 		#endif
 
@@ -860,8 +824,8 @@ bool user_defined_homing(AxisMask cycle_mask)
 
 	#if DEBUG_VHOME
 		float *dbg_mms = my_get_mpos();
-		v_debug("vMachine-home(0x%02x)",cycle_mask);
-		v_debug(" STEPS_PER_MM(%f,%f,%f)",
+		g_debug("vMachine-home(0x%02x)",cycle_mask);
+		g_debug(" STEPS_PER_MM(%f,%f,%f)",
 			STEPS_PER_MM(X_AXIS),
 			STEPS_PER_MM(Y_AXIS),
 			STEPS_PER_MM(Z_AXIS));
@@ -873,7 +837,7 @@ bool user_defined_homing(AxisMask cycle_mask)
 	if (cycle_mask & (bit(X_AXIS) | bit(Y_AXIS) | bit(A_AXIS) | bit(B_AXIS) | bit(C_AXIS)))
 	{
 		// prh - this is no longer an error, but merely report to the user ...
-		v_info("error: %d only $H or $HZ are allowed in vMachine-home(0x%02x)",
+		g_info("error: %d only $H or $HZ are allowed in vMachine-home(0x%02x)",
 			Error::SettingDisabled,
 			cycle_mask);
 		return true;
@@ -909,7 +873,7 @@ bool user_defined_homing(AxisMask cycle_mask)
 	if (cycle_mask == bit(Z_AXIS))
 	{
 		#if DEBUG_VHOME
-			v_debug("plotter-home Z_AXIS early exit");
+			g_debug("plotter-home Z_AXIS early exit");
 		#endif
 		return true;
 	}
