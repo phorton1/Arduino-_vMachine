@@ -3,58 +3,15 @@
 #include "vMachine.h"
 #include "my_ws2812b.h"
 
-#include <FluidNC.h>
-#include <Config.h>				// FluidNC
-#include <System.h>				// FluidNC
-#include <SDCard.h>				// FluidNC
+// #include <FluidNC.h>
+// #include <Config.h>				// FluidNC
+// #include <System.h>				// FluidNC
+// #include <SDCard.h>				// FluidNC
+
+#include <gStatus.h>			// FluidNC_extensions
 #include <FluidDebug.h>         // FluidNC_extensions
 
-
 #define DEBUG_SENSOR  0
-
-// prh Todo - paint outside stops (already used in homing)
-// prh Someday - use sensors for hard stops
-
-// FluidNC assumes hardware switches for limits with clear ON/OFF states
-// I have implemented optical sensors which detect a white strip on a belt
-// using analogRead(), along with a moving average and a pair of
-// thresholds.  It also needs to be called in a fairly tight timing loop.
-//
-// limits_get_state() is the issue.
-//
-// It is generally called as a real-time method, and/or when an ISR is triggered
-//
-// SOFT_LIMITS appear to check the current FluidNC position against the defined
-//      numerical limits, with either calls to limits_soft_check() or confusingly
-//      also via limitsCheckTravel() which appears to get callled generally
-//      and is bound weakly, and which I could easily override to just return
-//      false.
-//
-// If HARD_LIMITS, FluidNC will install an interrupt handler for defined limit pins
-//      and if CHECK_LIMITS_AT_INIT will call limits_getstate() at startup
-// 		and go into an alarm mode if any bit is set
-//
-// If HARD_LIMIT_FORCE_STATE_CHECK limits_get_state() will be called from the ISR
-//      otherwise it just assumes a limit has been hit and in either case
-//      calls mc_reset() to stop everything and puts the system in an alarm state with
-//      sys_rt_exec_alarm = ExecAlarm::HardLimit
-//
-// if !HARD_LIMITS then limits_init() merely does a pinMode() on the pin
-//
-// Funny, the FluidNC code still creates the limits_sw_queue and invariantly starts the
-// limitCheckTask() that would cycle every 32ms (DEBOUNCE_PERIOD), except that it blocks
-// on the limit_sw_queue which will never get anything from the ISR because
-// ENABLE_SOFTWARE_DEBOUNCE is not defined.  This is a waste of resources.
-//
-//      xQueueReceive(limit_sw_queue, &evt, portMAX_DELAY);  // block until receive queue
-//
-// I have changed Limits.cpp so that  limits_get_state() is weakly bound
-// so I can override it.
-//
-// Even then, the complicated limits_go_home() method, which actually does the seek,
-// bounce off, and so on, (a) appears to do X and Y simultaneously and (b) would need
-// to be modified to feed out Y when doing X, and vice-versa.  So I had to write my
-// own entire homing method in vMachine.cpp.
 
 vSensor x_sensor;
 vSensor y_sensor;
@@ -140,84 +97,30 @@ bool vSensor::pollState()
 // LEDs
 //------------------------------
 
-#define LED_MODE_NONE   0x000000
-#define LED_MODE_IDLE   0x003355	// cool cyan
-#define LED_MODE_BUSY   0x555500    // yellow
-#define LED_MODE_HOLD   0x005500    // bright green
-#define LED_MODE_HOMING 0x550055	// bright magenta
-#define LED_MODE_ALARM  0x770000    // blinking red
+#define  VTASK_DELAY_MS  20
 
-
-void setSystemLED()
+int getJobStateColor(JobState job_state)
+	// duplicated from cnc3018/switches.cpp
 {
-	static bool led_blink = false;
-	static uint32_t led_blink_time = 0;
-	static uint32_t led_mode = LED_MODE_NONE;
-	static State last_sys_state = State::Sleep;
-	static SDCard::State last_sd_state = SDCard::State::NotPresent;
-
-	SDCard *sdCard = config->_sdCard;
-	SDCard::State sd_state = sdCard ?
-		sdCard->get_state() :
-		SDCard::State::NotPresent;
-
-	if (last_sd_state != sd_state ||
-		last_sys_state != sys.state)
-	{
-		led_blink = false;
-		led_blink_time = 0;
-
-		switch (sys.state)
-		{
-			case State::Sleep :
-			case State::Idle :
-				led_mode = sd_state == SDCard::State::Busy ?
-					LED_MODE_BUSY :
-					LED_MODE_IDLE;
-				break;
-			case State::ConfigAlarm :
-			case State::SafetyDoor :
-			case State::Alarm :
-				led_mode = LED_MODE_ALARM;
-				led_blink_time = millis() + 500;
-				break;
-			case State::Homing      :
-				led_mode = LED_MODE_HOMING;
-				break;
-			case State::Jog :
-			case State::Cycle :
-			case State::CheckMode :
-				led_mode = LED_MODE_BUSY;
-				break;
-			case State::Hold        :
-				led_mode = LED_MODE_HOLD;
-				break;
-		}
-
-		pixels.setBrightness(50);
-		pixels.setPixelColor(PIXEL_SYS_LED,led_mode);
-		pixels.show();
-
-		last_sd_state = sd_state;
-		last_sys_state = sys.state;
+	switch (job_state)
+    {
+		case JOB_NONE:		return 0;
+		case JOB_IDLE:		return MY_LED_BLUE;
+		case JOB_HOLD:		return MY_LED_CYAN;
+		case JOB_BUSY:
+		case JOB_HOMING:
+		case JOB_PROBING:
+		case JOB_MESHING:	return MY_LED_YELLOW;
+		case JOB_ALARM:		return MY_LED_RED;
 	}
-	else if (led_blink_time && millis() > led_blink_time)
-	{
-		led_blink_time = millis() + 500;
-		led_blink = !led_blink;
-		pixels.setPixelColor(PIXEL_SYS_LED,led_blink ? led_mode : 0);
-		pixels.show();
-	}
+	g_error("UNKNOWN JobState(%d)",(int)job_state);
+	return MY_LED_MAGENTA;
 }
 
 
-
-//-------------------------------------------------
+//------------------------------
 // vSensorTask
-//-------------------------------------------------
-
-#define  VTASK_DELAY_MS  20
-
+//------------------------------
 
 void vSensorTask(void* pvParameters)
     // this method maybe should use a global "v_in_homing" boolean,
@@ -227,28 +130,89 @@ void vSensorTask(void* pvParameters)
     x_sensor.init(0,X_VLIMIT_PIN);
     y_sensor.init(1,Y_VLIMIT_PIN);
 
+	pixels.setBrightness(50);
+
 	g_info("vSensorTask running on core %d at priority %d",xPortGetCoreID(),uxTaskPriorityGet(NULL));
 
     while (true)
     {
         vTaskDelay(VTASK_DELAY_MS / portTICK_PERIOD_MS);
+
+		// update gStatus (for jobState)
+		// if not WITH_UI
+
+		bool show_leds = false;
+
+		#ifndef WITH_UI
+			g_status.updateStatus();
+		#endif
+
+		// get and note sensors changing
+
         bool x = x_sensor.pollState();
         bool y = y_sensor.pollState();
         // g_debug("vSensor x(%d) y(%d)",x,y);
 
-        bool led_on = x || y;
-        static bool led_state = 0;
-        if (led_state != led_on)
+        bool sensor_tripped = x || y;
+        static bool last_sensor_tripped = 0;
+        if (last_sensor_tripped != sensor_tripped)
         {
-            led_state = led_on;
+            last_sensor_tripped = sensor_tripped;
 
 			#if DEBUG_SENSOR
 				g_debug("setting pixels x=%d y=%d",x,y);
 			#endif
-			pixels.setPixelColor(PIXEL_LEFT_SENSOR, x ? 0xFF0000 : 0);
-			pixels.setPixelColor(PIXEL_RIGHT_SENSOR, y ? 0xFF0000 : 0);
-			pixels.show();
+			pixels.setPixelColor(PIXEL_LEFT_SENSOR, x ? MY_LED_RED : 0);
+			pixels.setPixelColor(PIXEL_RIGHT_SENSOR, y ? MY_LED_RED : 0);
+			show_leds = true;
         }
-		setSystemLED();
-    }
-}
+
+		// get and note jobState changing
+
+		static bool led_on = false;
+		static uint32_t led_flash = 0;
+		static JobState last_job_state = JOB_NONE;
+
+		JobState job_state = g_status.getJobState();
+		if (last_job_state != job_state)
+		{
+			last_job_state = job_state;
+
+			pixels.setPixelColor(PIXEL_SYS_LED,getJobStateColor(job_state));
+
+			if (job_state == JOB_ALARM ||
+				job_state == JOB_HOMING ||
+				job_state == JOB_PROBING ||
+				job_state == JOB_MESHING)
+			{
+				led_on = true;
+				led_flash = millis();
+			}
+			else
+			{
+				led_flash = 0;
+			}
+
+			show_leds = true;
+		}
+		else if (led_flash && millis() > led_flash + 300)
+		{
+			led_flash = millis();
+			if (led_on)
+			{
+				led_on = 0;
+				pixels.setPixelColor(PIXEL_SYS_LED, MY_LED_BLACK);
+			}
+			else
+			{
+				led_on = 1;
+				pixels.setPixelColor(PIXEL_SYS_LED,getJobStateColor(job_state));
+			}
+			show_leds = true;
+		}
+
+		if (show_leds)
+			pixels.show();
+
+	}	// while (true)
+}	// vSensorTask()

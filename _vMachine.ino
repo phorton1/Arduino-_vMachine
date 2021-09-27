@@ -15,10 +15,8 @@
     #include <SD.h>
 #endif
 
-// SET FOLLOWING #if to 0 for no UI, or 1 to include the UI
 
-#if 1           // 0=no UI, 1=with UI
-
+#ifdef WITH_UI
     #include <FluidNC_UI.h>
 
     void display_init()
@@ -29,7 +27,6 @@
         FluidNC_UI_init();
         g_debug("vMachine.ino display_init() finished");
     }
-
 #endif
 
 

@@ -4,7 +4,11 @@
 
 #pragma once
 
-#include <Machine/MachineConfig.h>
+#include <Machine/MachineConfig.h>      // FluidNC - required
+
+// #define WITH_UI
+// if you turn this on, you probably want to turn off FluidNC_UI/gDefs.h::UI_WITH_MESH
+
 
 #define X_VLIMIT_PIN                GPIO_NUM_34
 #define Y_VLIMIT_PIN                GPIO_NUM_35
