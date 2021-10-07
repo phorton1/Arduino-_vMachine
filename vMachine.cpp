@@ -29,8 +29,8 @@
 
 
 #define DEBUG_VHOME   	1		// can be up to 2
-#define DEBUG_VREVERSE  3
-#define DEBUG_VFORWARD  3		// can be up to 2
+#define DEBUG_VREVERSE  0
+#define DEBUG_VFORWARD  0		// can be up to 2
 	// debugging the inverse kinematics may introduce
 	// timing problems that can crash the machine ..
 
@@ -48,7 +48,7 @@ vMachine v_machine;
 Kinematics	kinematics;
 bool in_homing = false;
 
-Adafruit_NeoPixel pixels(NUM_PIXELS,V_LIMIT_LED_PIN);
+Adafruit_NeoPixel pixels(NUM_PIXELS,NEO_PIXEL_PIN);
 
 
 
@@ -117,7 +117,7 @@ void setDefaultPosition()
 {
 	memset(motor_steps,0,MAX_N_AXIS * sizeof(unsigned long));
 
-	float position[MAX_N_AXIS];
+	float position[V_NUM_AXES];
 	kinematics.inverse(
 		v_machine.getMachineWidth()/2,		// 200
 		v_machine.getMachineHeight()/2,		// 150
@@ -191,6 +191,7 @@ bool cartesian_to_motors(float* target, plan_line_data_t* pl_data, float* positi
 	// something about the sqrt() of the distance (per segment ?!?)
 {
 	float new_position[MAX_N_AXIS];
+	memset(new_position,0,MAX_N_AXIS * sizeof(float));
 
 	#if DEBUG_VREVERSE
 		g_debug("cartesian_to_motors(%f,%f,%f) old(%f,%f,%f) feed=%f",
@@ -356,7 +357,8 @@ void motors_to_cartesian(float* cartesian, float* motors, int n_axis)
 float *my_get_mpos()
 {
 	static float motors[MAX_N_AXIS];
-	for (int idx = 0; idx < MAX_N_AXIS; idx++)
+	memset(motors,0,MAX_N_AXIS * sizeof(float));
+	for (int idx = 0; idx < V_NUM_AXES; idx++)
 	{
 		motors[idx] = (float)motor_steps[idx] / STEPS_PER_MM(idx);
 	}
@@ -633,8 +635,6 @@ bool user_defined_homing(AxisMask cycle_mask)
 	// The primary purpose of this method is to establish the physical location of
 	//     the sled by determining the lengths of the X and Y belts at an arbitray
 	//     position.
-	// It does not, per se, "go" to the "home position" which is the default
-	//     $XYZ/Home/Mpos of 0,0,0
 	// Once "homed", then position 0,0,0 is the bottom left corner of the work area,
 	//     with the pen touching the paper and a command to go there will take
 	//     the sled there.
@@ -651,12 +651,12 @@ bool user_defined_homing(AxisMask cycle_mask)
 	in_homing = 1;
 
 	#if DEBUG_VHOME
-		float *dbg_mms = my_get_mpos();
 		g_debug("vMachine-home(0x%02x)",cycle_mask);
 		g_debug(" STEPS_PER_MM(%f,%f,%f)",
 			STEPS_PER_MM(X_AXIS),
 			STEPS_PER_MM(Y_AXIS),
 			STEPS_PER_MM(Z_AXIS));
+		float *dbg_mms = my_get_mpos();
 		debug_position("begin");
 	#endif
 
@@ -712,12 +712,12 @@ bool user_defined_homing(AxisMask cycle_mask)
 		#endif
 
 		// if both succeeded (should have been Y then X)
-		// we are now sitting at a system_pos that is correct
-		// relative to the zero stops on both axis IF they were at 0
-
-		// in nominal case the first axis done will be slack at this
-		// point and the latter will be close to the X motor at
-		// something like (750,19000)
+		// we are now sitting at an arbirary system_pos (motor_steps),
+		// pulled off of the x homing position, that is CORRECT relative to the zero
+		// stops on both axis AS IF they were at 0 when they were triggered.
+		//
+		// We now add in the magic diagonal distance to the work area
+		// minus (plus the negative) left and right zero offsets.
 
 		motor_steps[X_AXIS] +=
 			(v_machine.getZeroLength() + v_machine.getLeftZeroOffset()) *
@@ -730,8 +730,8 @@ bool user_defined_homing(AxisMask cycle_mask)
 			debug_position("end");
 		#endif
 
-		// We should now be able to say $G1 X200 Y150 and end up somewhere near
-		// the middle of the page .. or $G1 X0 Y0 to go near the bottom left corner
+		// We should now be able to say $G1 X200 Y150 and end up exactly at the
+		// middle of the page .. or $G1 X0 Y0 to the bottom left corner
 		// of the work area ...
 
 		//--------------------------------------------

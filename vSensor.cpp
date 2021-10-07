@@ -133,6 +133,8 @@ void vSensorTask(void* pvParameters)
 	pixels.setBrightness(50);
 
 	g_info("vSensorTask running on core %d at priority %d",xPortGetCoreID(),uxTaskPriorityGet(NULL));
+	delay(1000);
+
 
     while (true)
     {
@@ -143,14 +145,13 @@ void vSensorTask(void* pvParameters)
 
 		bool show_leds = false;
 
-		#ifndef WITH_UI
-			g_status.updateStatus();
-		#endif
-
 		// get and note sensors changing
 
         bool x = x_sensor.pollState();
         bool y = y_sensor.pollState();
+
+		#if 1
+
         // g_debug("vSensor x(%d) y(%d)",x,y);
 
         bool sensor_tripped = x || y;
@@ -167,7 +168,9 @@ void vSensorTask(void* pvParameters)
 			show_leds = true;
         }
 
-		// get and note jobState changing
+		#ifndef WITH_UI
+		 	g_status.updateStatus();
+	    #endif
 
 		static bool led_on = false;
 		static uint32_t led_flash = 0;
@@ -211,8 +214,14 @@ void vSensorTask(void* pvParameters)
 			show_leds = true;
 		}
 
+
+		#endif
+
+
 		if (show_leds)
 			pixels.show();
+
+
 
 	}	// while (true)
 }	// vSensorTask()

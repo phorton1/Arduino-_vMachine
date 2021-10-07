@@ -6,25 +6,24 @@
 
 #include <Machine/MachineConfig.h>      // FluidNC - required
 
-// #define WITH_UI
+#define WITH_UI
 // if you turn this on, you probably want to turn off FluidNC_UI/gDefs.h::UI_WITH_MESH
 
 
-#define X_VLIMIT_PIN                GPIO_NUM_34
-#define Y_VLIMIT_PIN                GPIO_NUM_35
-#define V_LIMIT_LED_PIN             GPIO_NUM_22
-#define V_SDCARD_CS                 GPIO_NUM_21
-
+#define X_VLIMIT_PIN                GPIO_NUM_39
+#define Y_VLIMIT_PIN                GPIO_NUM_36
+#define V_SDCARD_CS                 GPIO_NUM_4
+#define NEO_PIXEL_PIN               GPIO_NUM_15
 
 //----------------------------------------
 // Pin Usage
 //----------------------------------------
-// #define X_STEP_PIN               GPIO_NUM_27
-// #define X_DIRECTION_PIN          GPIO_NUM_26
-// #define Y_STEP_PIN               GPIO_NUM_33
-// #define Y_DIRECTION_PIN          GPIO_NUM_32
-// #define STEPPERS_DISABLE_PIN     GPIO_NUM_14
-// #define Z_SERVO_PIN              GPIO_NUM_13
+// #define X_STEP_PIN               GPIO_NUM_13
+// #define X_DIRECTION_PIN          GPIO_NUM_14
+// #define Y_STEP_PIN               GPIO_NUM_26
+// #define Y_DIRECTION_PIN          GPIO_NUM_25
+// #define STEPPERS_DISABLE_PIN     GPIO_NUM_27
+// #define Z_SERVO_PIN              GPIO_NUM_33
 //
 // SD Card
 
@@ -43,36 +42,16 @@
 // TFT and Touch share the SPI bus MOSI, MISO and CLK with the CD Card.
 // TFT uses following additional pins:
 //
-// #define TFT_CS                   GPIO_NUM_17
+// #define TFT_CS                   GPIO_NUM_5
 //
 // Touch uses the one following additinal pin, which
 // happens to be the default ESP32 SPI CS pin
 //
-// #define TOUCH_CS                 GPIO_NUM_5
+// #define TOUCH_CS                 GPIO_NUM_22
 //
-//---------------------------------------------
-// Remaining Esp32 Devkit pins at this time
-//---------------------------------------------
-// https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
-// Notes say "ADC2" cannot be used while WiFi is active.
-//
-//  VP  GPIO_NUM_36 - ADC1  input only
-//  VN  GPIO_NUM_39 - ADC1  input only
-//      GPIO_NUM_25 - ADC2* input ok, output ok
-//      GPIO_NUM_15 - ADC2* input ok, output ok, outputs PWM signal at boot
-//      GPIO_NUM_12 - ADC2* input "ok", output ok, boot fail if pulled high
-//      GPIO_NUM_4  - ADC2* input ok, output ok
-//  RX  GPIO_NUM_3  -       input "ok", output nope "RX pin", HIGH at boot
-//      GPIO_NUM_2  - ADC2*  input ok, output ok, connected to onboard LED
-//  TX  GPIO_NUM_1  -       input nope "TX pin", output "ok", debug output at boot
-//      GPIO_NUM_0  - ADC2* input "pulled up", output "ok", outputs PWM signal at boot
-//  D2  GPIO_NUM_9  - off limits (SPIFF)
-//  D3  GPIO_NUM_10 - off limits (SPIFF)
-//  CMD GPIO_NUM_11 - off limits (SPIFF)
-//  CLK GPIO_NUM_6  - off limits (SPIFF)
-//  D0  GPIO_NUM_7  - off limits (SPIFF)
-//  D1  GPIO_NUM_8  - off limits (SPIFF)
 
+
+#define V_NUM_AXES   3
 
 
 class vMachine : public Machine::MachineConfig

@@ -7,11 +7,11 @@
 
 #include <Adafruit_NeoPixel.h>
 
-#define PIXEL_LEFT_SENSOR  3
+#define PIXEL_LEFT_SENSOR  0
 #define PIXEL_RIGHT_SENSOR 2
-#define PIXEL_SYS_LED      0
+#define PIXEL_SYS_LED      1
 
-#define NUM_PIXELS         4
+#define NUM_PIXELS         3
 
 #define MY_LED_BLACK    0x000000
 #define MY_LED_RED      0x440000

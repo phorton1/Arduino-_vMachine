@@ -23,38 +23,26 @@
 //----------------------------------------------
 // Set G55 to 12x9" paper and go to upper right corner
 //
-// 		g10 L2 p2 x47.6 y35.7 z0
+// 		g10 L2 p2 x47.6 y35.7 z-90
 // 		g0 x304.8 y228.6
 //
 // Set G56 to 8x11.5" paper
 //
-// 		g10 L2 p3 x60.3 y42.05 z0
+// 		g10 L2 p3 x60.3 y42.05 z-90
 //		G0 x279.4 y215.9
 
 //----------------------------------------
 // Default vMachine Machine Definition
-//----------------------------------------
-// Defines the dimensions and some behavior of the vMachine
-// machine that was created as an initial prototype
-// "reference" machine for this code.
-//
-// These may be modified by changing the $vMachine settings
-// at runtime or via the WEBUI  The following values will be
-// initially used and after a $RST=* factory reset command.
-//
-// Note that after changing $nn or named $/ preferences, you
-// should reboot the machine as many of these are read at system
-// startup and cached in memory for usage.
-//
+//---------------------------------------
 // The "machine area" is 400x300mm == 15.748" x 11.811"
 
-#define VMACHINE_DEFAULT_MACHINE_WIDTH          400  // mm, $ESP910, $vMachine/machineWidth
-#define VMACHINE_DEFAULT_MACHINE_HEIGHT         300  // mm, $ESP911, $vMachine/machineHeight;
+#define VMACHINE_DEFAULT_MACHINE_WIDTH          400  // mm, $vMachine/machineWidth
+#define VMACHINE_DEFAULT_MACHINE_HEIGHT         300  // mm, $vMachine/machineHeight;
 
-// the work area is 5" and a distance below the center line between motors
+// the work area is 4" and a distance below the center line between motors
 
-#define VMACHINE_DEFAULT_DIST_BETWEEN_MOTORS    (28.75 * 25.4)       // 730.25 mm, $ESP912, $vMachine/distBetweenMotors
-#define VMACHINE_DEFAULT_MOTOR_OFFSET_Y         ((5 * 25.4) + 24.3)  // 151.30 mm, $ESP914, $vMachine/motorOffsetY;
+#define VMACHINE_DEFAULT_DIST_BETWEEN_MOTORS    (28.75 * 25.4)       // 730.25 mm, $vMachine/distBetweenMotors
+#define VMACHINE_DEFAULT_MOTOR_OFFSET_Y         ((4 * 25.4) + 24.3)  // 125.9 mm,  $vMachine/motorOffsetY;
 
 // defaults for kinematic calculation details
 
@@ -80,22 +68,40 @@
     // foward guessing stops (fails) if it gets to a chain length over this
 
 // Behavioral Defaults
-// See comments in vMachine.cpp how these ZERO lengths affect
-// the internal representation of machine position and play into
-// the "safe" area.
 
-#define VMACHINE_DEFAULT_ZERO_LENGTH         223.959     // mm, $ESP943, $vMachine/zeroLength
-#define VMACHINE_DEFAULT_LEFT_ZERO_OFFSET    -10.000     // mm, $ESP945, $vMachine/leftZeroOffsest  (-10 mm == -500 steps)
-#define VMACHINE_DEFAULT_RIGHT_ZERO_OFFSET   -10.000     // mm, $ESP947, $vMachine/rightZeroOffsest
+#define VMACHINE_DEFAULT_ZERO_LENGTH         209.849     // mm    $vMachine/zeroLength
+	// 209.849 = sqrt(129.5^2 + 165.125^2)
+	//
+	// This number is the length of the hypotenuse from the center of the  motor
+	// to the upper left/right corner of the work area, which is given by the formula:
+	//
+	//     sqrt(MOTOR_OFFSET_Y^2+ MOTOR_OFFSET_X^2)
+	//
+	// where MOTOR_X_OFFSET = (DIST_BETWEEN_MOTORS - VMACHINE_DEFAULT_MACHINE_WIDTH)/2,
+	// or (730.25-400)/2 = 330.25/2 = 165.125 in our case, so sqrt(129.5^2 + 165.125)
 
-// we define a safe area around the work area to constrain movements
-// and for soft limit checks.  This should all be within the augmented
-// work area as defined by the Zero Offset settings (explained below)
+#define VMACHINE_DEFAULT_LEFT_ZERO_OFFSET    -10.000     // mm, $vMachine/leftZeroOffsest  (-10 mm == -500 steps)
+#define VMACHINE_DEFAULT_RIGHT_ZERO_OFFSET   -10.000     // mm, $vMachine/rightZeroOffsest
+	// We place the white stripes 10mm closer to the sled, given by these constants,
+	// so that when the sensors are triggered we are at VMACHINE_DEFAULT_ZERO_LENGTH - 10mm,
+	// thus the we can reach the work area without triggering the sensors again, since it
+	// will be 10,10 mm "in" from the trigger point.
+	//
+	// Thus the white stripes are painted just about 200mm (209.849-10 =~ 200) from the
+	// center of the sled.   The sled attachment points are 40mm from the center, so we
+	// place the leading edge of the white strips 160mm from the sled attachment points.
+	//
+	// This gives us a little extra room to work with.
 
 #define VMACHINE_DEFAULT_SAFE_AREA_OFFSET       5.0     // mm, $ESP951, $vMachine/safeAreaOffset
+	// we define a safe area around the work area to constrain movements
+	// and for soft limit checks.  This should all be within the augmented
+	// work area as defined by the Zero Offset settings above.
 
-#define VMACHINE_DEFAULT_Z_AXIS_SAFE_POSITION   20 	// mm, $ESP953, $vMachine/zAxisHomeSafe
-	// safe position for Z axis during homing
+#define VMACHINE_DEFAULT_Z_AXIS_SAFE_POSITION   -70 	// mm, $ESP953, $vMachine/zAxisHomeSafe
+	// The absolute positions for the Z-Axis are 0==up in the air to -90==touching,
+	// hence we define "zero" as -90 for our paper settings above.  The safe travel
+	// in ABSOLUTE settings is then something like -70
 #define VMACHINE_DEFAULT_LINE_SEGMENT_LENGTH    0.5	// mm, $ESP955, $vMachine/lineSegLength
 	// length of subsegments done by cartesian_to_motors()
 

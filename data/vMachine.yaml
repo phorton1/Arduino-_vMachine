@@ -12,8 +12,7 @@ stepping:
     disable_delay_us: 0
 
 axes:
-    shared_stepper_disable: gpio.14
-        # :low
+    shared_stepper_disable: gpio.27
         
     x:
         steps_per_mm: 50
@@ -24,8 +23,8 @@ axes:
         motor0:
             pulloff: 15
             standard_stepper:
-                direction: gpio.26
-                step: gpio.27
+                step: gpio.13
+                direction: gpio.14
         homing:
             cycle: 1
             seek_rate: 4000
@@ -40,13 +39,14 @@ axes:
         motor0:
             pulloff: 15
             standard_stepper:
-                direction: gpio.32
-                step: gpio.33
+                step: gpio.26
+                direction: gpio.25:low
+                    # invert the sense of the Y directio pin
         homing:
             cycle: 1
             seek_rate: 4000
             feed_rate: 400
-            # positive_direction: false 
+            
     z:
         steps_per_mm: 10
         max_rate: 10000
@@ -55,19 +55,7 @@ axes:
         # soft_limits: true
         motor0:
             rc_servo:
-                output_pin: gpio.13
-            
-                # cal_min and max are required, the defaults are 0!
-                # cal_min: 1.0
-                # cal_max: 1.0    
-                # Note: Whitespace following (float values), particularly
-                # tab characters, will break the parser.
-        # homing:
-        #     cycle: 1
-        #     feed_rate: 4000
-        #     seek_rate: 1000
-        #     pulloff: 15
-        #     positive_direction: false
+                output_pin: gpio.33
             
 comms:
     wifi_sta:
@@ -84,7 +72,7 @@ spi:
     
 sdcard:
     # and then one can specify the specific cs used for the SDCard
-    cs: gpio.21
+    cs: gpio.4
     card_detect: NO_PIN
 
   

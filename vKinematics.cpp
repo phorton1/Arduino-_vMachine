@@ -47,7 +47,7 @@ int prh_debug_forward = 0;
 // note on machine dimensions
 //------------------------------------
 // the center of the motor is 24.3mm above the board
-// the top of the "machine area" is 5" (127mm) below the top of the board
+// the top of the "machine area" is 4" (101.6mm) below the top of the board
 //
 // the most critical dimensions are the distance between motor centers,
 //    and the distance to the top left and right corners of the
@@ -55,30 +55,6 @@ int prh_debug_forward = 0;
 //    X and Y chain lengths (motor positions), respectively.
 //
 // Everything else is calculated from those zero points.
-//
-// These chain lengths are stored in the global int32 "sys_position"
-//    as the number of steps on each stepper motor.
-//
-//    Given the FluidNC "steps/mm" setting (50) the chain lengths
-//    in steps can be converted to mm's and vice versa.
-//
-//    When in mm's the chain lengths are refered to as the
-//    motor_positions.
-//
-//    The method cartesian_to_motors() is used to calculate
-//    the needed chain lengths to arrive at a given X,Y location.
-//    It is only called when a move is to take place, so it ALSO
-//    calls mc_line() which (calls the planner, etc to actually)
-//    effect the movements which all take place in stepper motor
-//    positions. This is the "inverse" kinematics.
-//
-// The "machine" postition is in cartesian coordinates from the
-// bottom left of the "machine area" in mm's.  It can be
-// approximated from the chain lengths via the motors_to_cartesian()
-// method that is ONLY called for reporting .. never for machine
-// movements.  There are also storable "work" coordinate systems,
-// that are managed by FluidNC (see %54, $#, etc) but they are not
-// important for this discussion.
 
 
 //---------------------------------
