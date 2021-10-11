@@ -8,7 +8,7 @@
 
 #define VSENSOR_BUFSIZE        6
 #define VSENSOR_DEFAULT_V_ON   2048     // 2048     // 1.65V
-#define VSENSOR_DEFAULT_V_OFF  1900     // 1800     // 1.45V
+#define VSENSOR_DEFAULT_V_OFF  1850     // 1800     // 1.45V
     // The thresholds are in terms of a 12 bit sample (0..4095)
     // on a 3.3V input pin, so 2048, is for example 1.65 volts.
     // If the value rises above v_on, the state will go high.
@@ -23,6 +23,7 @@ class vSensor
         void init(int axis_num, int pin);
         void setThresholds(int v_on, int v_off);
         bool getState() { return m_state; };
+        uint32_t getValue() { return m_value / VSENSOR_BUFSIZE; }
 
 
     private:

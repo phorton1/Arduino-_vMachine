@@ -122,6 +122,9 @@ int getJobStateColor(JobState job_state)
 // vSensorTask
 //------------------------------
 
+// #include <Uart.h>
+
+
 void vSensorTask(void* pvParameters)
     // this method maybe should use a global "v_in_homing" boolean,
     // and if not, do the "panic" mc_reset() and set an alarm if a
@@ -134,7 +137,6 @@ void vSensorTask(void* pvParameters)
 
 	g_info("vSensorTask running on core %d at priority %d",xPortGetCoreID(),uxTaskPriorityGet(NULL));
 	delay(1000);
-
 
     while (true)
     {
@@ -150,77 +152,80 @@ void vSensorTask(void* pvParameters)
         bool x = x_sensor.pollState();
         bool y = y_sensor.pollState();
 
-		#if 1
-
-        // g_debug("vSensor x(%d) y(%d)",x,y);
-
-        bool sensor_tripped = x || y;
-        static bool last_sensor_tripped = 0;
-        if (last_sensor_tripped != sensor_tripped)
-        {
-            last_sensor_tripped = sensor_tripped;
-
-			#if DEBUG_SENSOR
-				g_debug("setting pixels x=%d y=%d",x,y);
-			#endif
-			pixels.setPixelColor(PIXEL_LEFT_SENSOR, x ? MY_LED_RED : 0);
-			pixels.setPixelColor(PIXEL_RIGHT_SENSOR, y ? MY_LED_RED : 0);
-			show_leds = true;
-        }
-
-		#ifndef WITH_UI
-		 	g_status.updateStatus();
-	    #endif
-
-		static bool led_on = false;
-		static uint32_t led_flash = 0;
-		static JobState last_job_state = JOB_NONE;
-
-		JobState job_state = g_status.getJobState();
-		if (last_job_state != job_state)
-		{
-			last_job_state = job_state;
-
-			pixels.setPixelColor(PIXEL_SYS_LED,getJobStateColor(job_state));
-
-			if (job_state == JOB_ALARM ||
-				job_state == JOB_HOMING ||
-				job_state == JOB_PROBING ||
-				job_state == JOB_MESHING)
-			{
-				led_on = true;
-				led_flash = millis();
-			}
-			else
-			{
-				led_flash = 0;
-			}
-
-			show_leds = true;
-		}
-		else if (led_flash && millis() > led_flash + 300)
-		{
-			led_flash = millis();
-			if (led_on)
-			{
-				led_on = 0;
-				pixels.setPixelColor(PIXEL_SYS_LED, MY_LED_BLACK);
-			}
-			else
-			{
-				led_on = 1;
-				pixels.setPixelColor(PIXEL_SYS_LED,getJobStateColor(job_state));
-			}
-			show_leds = true;
-		}
-
-
+		#if 0
+			uint32_t xv = x_sensor.getValue();
+			uint32_t yv = y_sensor.getValue();
+			Uart0.print(xv);
+			Uart0.print(",0,4000,");
+			Uart0.println(yv);
 		#endif
 
 
+		#if 1
+			// g_debug("vSensor x(%d) y(%d)",x,y);
+			bool sensor_tripped = x || y;
+			static bool last_sensor_tripped = 0;
+			if (last_sensor_tripped != sensor_tripped)
+			{
+				last_sensor_tripped = sensor_tripped;
+
+				#if DEBUG_SENSOR
+					g_debug("setting pixels x=%d y=%d",x,y);
+				#endif
+				pixels.setPixelColor(PIXEL_LEFT_SENSOR, x ? MY_LED_RED : 0);
+				pixels.setPixelColor(PIXEL_RIGHT_SENSOR, y ? MY_LED_RED : 0);
+				show_leds = true;
+			}
+
+			#ifndef WITH_UI
+				g_status.updateStatus();
+			#endif
+
+			static bool led_on = false;
+			static uint32_t led_flash = 0;
+			static JobState last_job_state = JOB_NONE;
+
+			JobState job_state = g_status.getJobState();
+			if (last_job_state != job_state)
+			{
+				last_job_state = job_state;
+
+				pixels.setPixelColor(PIXEL_SYS_LED,getJobStateColor(job_state));
+
+				if (job_state == JOB_ALARM ||
+					job_state == JOB_HOMING ||
+					job_state == JOB_PROBING ||
+					job_state == JOB_MESHING)
+				{
+					led_on = true;
+					led_flash = millis();
+				}
+				else
+				{
+					led_flash = 0;
+				}
+
+				show_leds = true;
+			}
+			else if (led_flash && millis() > led_flash + 300)
+			{
+				led_flash = millis();
+				if (led_on)
+				{
+					led_on = 0;
+					pixels.setPixelColor(PIXEL_SYS_LED, MY_LED_BLACK);
+				}
+				else
+				{
+					led_on = 1;
+					pixels.setPixelColor(PIXEL_SYS_LED,getJobStateColor(job_state));
+				}
+				show_leds = true;
+			}
+		#endif
+
 		if (show_leds)
 			pixels.show();
-
 
 
 	}	// while (true)
