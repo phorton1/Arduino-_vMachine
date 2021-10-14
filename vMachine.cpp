@@ -48,8 +48,9 @@ vMachine v_machine;
 Kinematics	kinematics;
 bool in_homing = false;
 
-Adafruit_NeoPixel pixels(NUM_PIXELS,NEO_PIXEL_PIN);
-
+#ifdef WITH_PIXELS
+	Adafruit_NeoPixel pixels(NUM_PIXELS,NEO_PIXEL_PIN);
+#endif
 
 
 //----------------------------------------
@@ -152,9 +153,9 @@ void machine_init()
 		debug_start_sdcard();
 	#endif
 
-	#ifdef WITH_2812B
+	#ifdef WITH_PIXELS
 		pixels.begin();
-	#endif  // WITH_2812B
+	#endif
 
 	// initialize the kinematics engine
 	// and set the default position

@@ -1,23 +1,29 @@
+//-------------------------------------
+// vSensor.cpp
+//-------------------------------------
+// I have changed to infrared sensors that can probably
+// be used with digitalRead() and it is not clear how
+// much I need, if at all, the sample averaging stuff.
+// But the new sensors work with this code AS-IS and
+// so I am not changing it.  It could be cleaned up.
 
 #include "vSensor.h"
 #include "vMachine.h"
 #include "my_ws2812b.h"
-
-// #include <FluidNC.h>
-// #include <Config.h>				// FluidNC
-// #include <System.h>				// FluidNC
-// #include <SDCard.h>				// FluidNC
 
 #include <gStatus.h>			// FluidNC_extensions
 #include <FluidDebug.h>         // FluidNC_extensions
 
 #define DEBUG_SENSOR  0
 
+#define  VTASK_DELAY_MS  20
+
 vSensor x_sensor;
 vSensor y_sensor;
 
 
 int getVSensorState()
+	// called from homing
 {
     bool x = x_sensor.getState();
     bool y = y_sensor.getState();
@@ -31,6 +37,7 @@ int getVSensorState()
 //---------------------------------
 // vSensor
 //---------------------------------
+
 
 vSensor::vSensor()
 {
@@ -94,28 +101,28 @@ bool vSensor::pollState()
 
 
 //------------------------------
-// LEDs
+// Pixels
 //------------------------------
 
-#define  VTASK_DELAY_MS  20
-
-int getJobStateColor(JobState job_state)
-	// duplicated from cnc3018/switches.cpp
-{
-	switch (job_state)
-    {
-		case JOB_NONE:		return 0;
-		case JOB_IDLE:		return MY_LED_BLUE;
-		case JOB_HOLD:		return MY_LED_CYAN;
-		case JOB_BUSY:
-		case JOB_HOMING:
-		case JOB_PROBING:
-		case JOB_MESHING:	return MY_LED_YELLOW;
-		case JOB_ALARM:		return MY_LED_RED;
+#ifdef WITH_PIXELS
+	int getJobStateColor(JobState job_state)
+		// duplicated from cnc3018/switches.cpp
+	{
+		switch (job_state)
+		{
+			case JOB_NONE:		return 0;
+			case JOB_IDLE:		return MY_LED_BLUE;
+			case JOB_HOLD:		return MY_LED_CYAN;
+			case JOB_BUSY:
+			case JOB_HOMING:
+			case JOB_PROBING:
+			case JOB_MESHING:	return MY_LED_YELLOW;
+			case JOB_ALARM:		return MY_LED_RED;
+		}
+		g_error("UNKNOWN JobState(%d)",(int)job_state);
+		return MY_LED_MAGENTA;
 	}
-	g_error("UNKNOWN JobState(%d)",(int)job_state);
-	return MY_LED_MAGENTA;
-}
+#endif
 
 
 //------------------------------
@@ -133,7 +140,9 @@ void vSensorTask(void* pvParameters)
     x_sensor.init(0,X_VLIMIT_PIN);
     y_sensor.init(1,Y_VLIMIT_PIN);
 
-	pixels.setBrightness(50);
+	#ifdef WITH_PIXELS
+		pixels.setBrightness(50);
+	#endif
 
 	g_info("vSensorTask running on core %d at priority %d",xPortGetCoreID(),uxTaskPriorityGet(NULL));
 	delay(1000);
@@ -141,11 +150,6 @@ void vSensorTask(void* pvParameters)
     while (true)
     {
         vTaskDelay(VTASK_DELAY_MS / portTICK_PERIOD_MS);
-
-		// update gStatus (for jobState)
-		// if not WITH_UI
-
-		bool show_leds = false;
 
 		// get and note sensors changing
 
@@ -161,20 +165,25 @@ void vSensorTask(void* pvParameters)
 		#endif
 
 
-		#if 1
-			// g_debug("vSensor x(%d) y(%d)",x,y);
+		#ifdef WITH_PIXELS
+
+			// update gStatus (for jobState)
+			// if not WITH_UI
+
+			bool show_leds = false;
 			bool sensor_tripped = x || y;
 			static bool last_sensor_tripped = 0;
 			if (last_sensor_tripped != sensor_tripped)
 			{
 				last_sensor_tripped = sensor_tripped;
 
-				#if DEBUG_SENSOR
-					g_debug("setting pixels x=%d y=%d",x,y);
-				#endif
-				pixels.setPixelColor(PIXEL_LEFT_SENSOR, x ? MY_LED_RED : 0);
-				pixels.setPixelColor(PIXEL_RIGHT_SENSOR, y ? MY_LED_RED : 0);
-				show_leds = true;
+					#if DEBUG_SENSOR
+						g_debug("setting pixels x=%d y=%d",x,y);
+					#endif
+
+					pixels.setPixelColor(PIXEL_LEFT_SENSOR, x ? MY_LED_RED : 0);
+					pixels.setPixelColor(PIXEL_RIGHT_SENSOR, y ? MY_LED_RED : 0);
+					show_leds = true;
 			}
 
 			#ifndef WITH_UI
@@ -184,8 +193,8 @@ void vSensorTask(void* pvParameters)
 			static bool led_on = false;
 			static uint32_t led_flash = 0;
 			static JobState last_job_state = JOB_NONE;
-
 			JobState job_state = g_status.getJobState();
+
 			if (last_job_state != job_state)
 			{
 				last_job_state = job_state;
@@ -222,11 +231,11 @@ void vSensorTask(void* pvParameters)
 				}
 				show_leds = true;
 			}
-		#endif
 
-		if (show_leds)
-			pixels.show();
+			if (show_leds)
+				pixels.show();
 
+		#endif	// WITH_PIXELS
 
 	}	// while (true)
 }	// vSensorTask()

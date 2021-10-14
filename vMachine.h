@@ -1,14 +1,16 @@
 // A maslow-like vMachine for the FluidNC project
-// This version is built on the Yaml_Settings branch
-// of the FluidNC repository as of July 4, 2021
 
 #pragma once
 
 #include <Machine/MachineConfig.h>      // FluidNC - required
 
 #define WITH_UI
-// if you turn this on, you probably want to turn off FluidNC_UI/gDefs.h::UI_WITH_MESH
-
+    // requires Arduino/libraries/FluidNC_UI
+    // https://github.com/phorton1/Arduino-libraries-FluidNC_UI
+    // if you turn this on in the vMachine, then you probably want to
+    // turn off FluidNC_UI/gDefs.h::UI_WITH_MESH
+#define WITH_PIXELS
+    // requires the AdafruitNeopixels library
 
 #define X_VLIMIT_PIN                GPIO_NUM_39
 #define Y_VLIMIT_PIN                GPIO_NUM_36
