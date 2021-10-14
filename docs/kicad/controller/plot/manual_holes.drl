@@ -1,0 +1,26 @@
+
+; This line is a comment and is ignored
+; The next line starts the "header":
+M48
+
+; Units and number format:
+METRIC,LZ
+
+; The "drill" is defined with diameter of 3.5 mm
+T1C3.50
+
+; End of header, M95 or %, and beginning of body:
+M95
+
+; Use tool 1 defined in the header
+T1
+
+; Drill Points
+X3.81Y03.81
+X3.81Y95.25
+X64.77Y03.81
+X64.77Y95.25
+
+
+; End of program;
+M30
