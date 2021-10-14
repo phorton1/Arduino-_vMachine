@@ -1,3 +1,5 @@
+# This vMachine yaml is copied to config.yaml after changes,
+# so that we keep it separate from, and yet use, config.yaml.
 
 name: "vMachine"
 board: "vMachine Dev Board"
@@ -60,10 +62,11 @@ axes:
 comms:
     wifi_sta:
         ssid: THX36
-    wifi_ap:
-        ip_address: "192.168.0.1"
-        ssid: FluidNC
-
+    
+    # as a concession to convenience, I leave the checked-in config.yaml
+    # with my wifi SSID.  For users, it will fail to connect and fall back
+    # to the FluidNC Access Point with password 12345678
+    
 spi:
     # one has to tell FluidNC the default ESP32 SPI pins!
     miso: gpio.19
