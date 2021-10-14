@@ -1,6 +1,6 @@
 # The vMachine - Electronics
 
-**[Home](../readme.md)** --
+**[Home](readne.md)** --
 **[History](history.md)** --
 **[Hardware](hardware.md)** --
 **Electronics** --

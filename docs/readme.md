@@ -1,12 +1,12 @@
 # The vMachine - Home
 
 **Home** --
-**[History](docs/history.md)** --
-**[Hardware](docs/hardware.md)** --
-**[Electronics](docs/electronics.md)** --
-**[User Interface](docs/ui.md)** --
-**[Software](docs/software.md)** --
-**[Installation](docs/installation.md)**
+**[History](history.md)** --
+**[Hardware](hardware.md)** --
+**[Electronics](electronics.md)** --
+**[User Interface](ui.md)** --
+**[Software](software.md)** --
+**[Installation](installation.md)**
 
 The vMachine is a full featured proof-of-concept implementation of a **V plotter**.
 It is essentially a CNC machine that uses *triangular kinematics* to work in a
@@ -114,23 +114,23 @@ directly on the board.  Then you can tape a piece of (US letter) paper in the
 The documentation starts with this page, and includes the following additional
 pages:
 
-- **[History](docs/history.md)** - my personal historical perspectives and
+- **[History](history.md)** - my personal historical perspectives and
 photos of early prototypes and previous versions of the vMachine.
-- **[Hardware](docs/hardware.md)** - details the physical
+- **[Hardware](hardware.md)** - details the physical
 construction of the vMachine, including the 3D printing and mechanical parts.
-- **[Electronics](docs/electronics.md)** - the schematics and home made circuit
+- **[Electronics](electronics.md)** - the schematics and home made circuit
 boards for the machine.
-- **[User Interface](docs/ui.md)** - a synopsis of the behavior of the
+- **[User Interface](ui.md)** - a synopsis of the behavior of the
 vMachine and it's generalized **FluidNC_UI** user interface.
-- **[Software](docs/software.md)** - an overview of the software architecture
+- **[Software](software.md)** - an overview of the software architecture
 of the vMachine and FluidNC.
-- **[Installation](docs/Installation.md)** - instructions on building and installing
+- **[Installation](Installation.md)** - instructions on building and installing
 the vMachine firmware onto the ESP32 using the Arduino IDE environment.
 
 
 It is recommended that you read all these pages BEFORE constructing a vMachine.
 In my opinion if you are going to build a machine from these sources, or part of them,
-you should **START** with the **[Installation](docs/Installation.md)**
+you should **START** with the **[Installation](Installation.md)**
 page and the first thing you should do is *build the firmware and install it*
 to a bare ESP32 dev module with just a USB cable.
 
@@ -160,5 +160,5 @@ I'm gonna have to do something here.  Yech, I hate those headers in source files
 <br>
 <hr>
 <div style="text-align: right">
-<a href='docs/history.md'>NEXT</a><i> - more about the vMachine ...</i>
+<a href='history.md'>NEXT</a><i> - more about the vMachine ...</i>
 </div>
