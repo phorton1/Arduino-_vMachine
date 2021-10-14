@@ -78,7 +78,10 @@ By far the hardest part of the production process was milling the green UV solde
 resist epoxy off of the pads where I needed to solder.  Below is a picture of the circuit
 board, still on the cnc machine, after removing the solder resist.
 
-TODO: add hackaday blog/page for spring loaded collet and pcb milling and link it here
+TODO: add hackaday blog/page(s) for
+my spring loaded collet design and
+my experiments with laser curing of UV photoresist and
+link to them from here
 
 [![vMachine_controller_milled.jpg](images/vMachine_controller_milled_resized.jpg)](images/vMachine_controller_milled.jpg)
 
@@ -164,7 +167,7 @@ high via resistors from the 5V VCC line.
 ![lcd_connector_schematic.jpg](images/lcd_connector_schematic.jpg)
 ![lcd_connector_pcb.jpg](images/lcd_connector_pcb.jpg)
 
-The images below are of a pervious (but exactly the same electronically) version
+The images below are of a previous (but exactly the same electronically) version
 of the PCB that was larger and had mounting holes.  There are no mounting holes
 for the LCD connector anymore.  It fits snugly enough without being screwed on.
 
@@ -183,5 +186,5 @@ connector on the controller board.
 <br>
 <hr>
 <div style="text-align: right">
-<a href='software.md'>NEXT</a><i> - the vMachine User Interface ...</i>
+<a href='ui.md'>NEXT</a><i> - the vMachine User Interface ...</i>
 </div>

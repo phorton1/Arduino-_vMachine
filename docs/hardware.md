@@ -32,7 +32,7 @@ as well as the **3D printed parts** shown on this page, along with a variety
 of M2 and M3 (2 and 3 mm) **machine and wood/metal screws**.
 
 
-## The Board
+## 1. The Board
 
 The board is 28.75" wide by 24" high from 1/2" or 3/8" plywood.
 
@@ -46,7 +46,7 @@ I drilled the holes for the screws and wires after preparing the board.
 
 <br>
 
-## Motor Mount and Infrared Sensor Assembly
+## 2. Motor Mount and Infrared Sensor Assembly
 
 I generally print everything from PLA with 0.3mm layer heights in draft quality for speed,
 unless otherwise noted.  The first files printed from the **stl directory** are the
@@ -79,7 +79,7 @@ The process is repeated for the other side of the board.
 
 <br>
 
-## Sled Parts
+## 3. 3D Print Sled Parts
 
 The sled consists of several parts
 
@@ -130,7 +130,7 @@ that position.
 
 <br>
 
-## Sled Assembly
+## 4. Sled Assembly
 
 The parts for the sled should be printed and dry-fitted to make sure the bearings move smoothly
 around the base and that the pen_shaft travels smoothly up and down in the sled when assembled.
@@ -151,7 +151,7 @@ Once the sled parts have been printed and dry fitted and you are satisified with
 assembly of the sled may proceed.
 
 
-### Attach Belts to the Bearings
+### 4a. Attach Belts to the Bearings
 
 Attach one meter of GT2 5mm belt to each of the two bearings as shown
 with one M3x6 machine screw threaded into the plastic.
@@ -159,14 +159,14 @@ with one M3x6 machine screw threaded into the plastic.
 [![attach_belts.jpg](images/attach_belts_resized.jpg)](images/attach_belts.jpg)
 
 
-## Measure and Place the Zero Marks on the Belts
+### 4b. Measure and Place the Zero Marks on the Belts
 
 I initially started by *painting* a white stripe on the black GT2 belt with
 acrylic paint.  That worked ok, but it turned out to be easier to just cut
 a small piece of white electrical tape and stick it on the belt.  Then, in
 the end, I found that I got a better "signal" for the infrared sensors if,
-instead of white paint or tape, I put a small piece of reflective aluminum
-tape on the belt.
+instead of white paint or tape, I put a small piece of **reflective aluminum
+tape** on the belt.
 
 [![aluminum_on_belt.jpg](images/aluminum_on_belt_resized.jpg)](images/aluminum_on_belt.jpg)
 
@@ -197,7 +197,7 @@ as does the tape, so they will likely need to be refreshed over the lifetime
 of the machine.  The tape is easier to use and easier to replace.
 
 
-## Assemble the Sled Base
+### 4c. Assemble the Sled Base
 
 Place the left bearing on the sled_base, then place the right bearing on
 top of it, and screw the sled_cap on snugly (but not overly tight).  It
@@ -212,7 +212,7 @@ point will be pointed upwards.
 [![proper_orientation.jpg](images/proper_orientation_resized.jpg)](images/proper_orientation.jpg)
 
 
-## Attach and Test the Servo
+### 4d. Attach and Test the Servo
 
 The servo is a tight fit.  Cram it in there.  It barely needs a screw,
 but I used one M3x6 screw, threaded directly into the plastic of the
@@ -268,10 +268,10 @@ into the serial monitor and press the **Send** button
 the servo should move and the firmware should respond
 each time with "ok" as in the below photo of the Arduino Srial Monitor.
 
-![arduino_serial_monitor.jpg](images/arduino_serial_monitor.jpg)
+![arduino_serial_monitor_G0Z-70.jpg](images/arduino_serial_monitor_G0Z-70.jpg)
 
 
-By entering these alternatively, one after the other, you should see the servo move
+By entering these commands alternatively, one after the other, you should see the servo move
 predictably clockwise or counterclockwise 20 degrees.  You can try other values
 too.  In general just *play* with the servo using the serial monitor until you
 are confident you can control it.
@@ -308,7 +308,7 @@ until the servo reliably moves between the pen-up and pen-down positions
 with the minus-70 and minus-90 gcode commands.
 
 
-### Insert the **pen_tip** part and a Sharpie for calibration
+### 4e. Insert the **pen_tip** part and a Sharpie for calibration
 
 It's easier to play with this part on your desk than on the machine, so
 let's setup the Sharpie pen position before mounting more stuff.
@@ -338,8 +338,9 @@ pen_tip part to secure it within the pen_shaft.   For now however, remove the
 Sharpie and proceed to the next step (attaching the weights).
 
 
+<br>
 
-## Attach the Weights
+## 5. Attach the Weights
 
 OK, I have put off talking about the lead weights as long as possible.
 
@@ -350,7 +351,6 @@ On my machine I have the following lead fishing weights attached:
 - 5 ounces (a little over 1/4 lb, or about 140 grams) at the end of each belt
 - 1 ounce on a piece of wire off the top of the sled
 - 2 ounces on the right lower side of the sled.
-
 
 [![belt_weights.jpg](images/belt_weights_resized.jpg)](images/belt_weights.jpg)
 
@@ -403,20 +403,9 @@ and since the pen tip is at the center of the sled, then the forces from the bel
 it, more or less exactly as expected.
 
 
-## Hang the sled and belts on the machine
+<br>
 
-The entire tangle of belts, weights, and the sled now form a sub-assembly
-that can be placed, or removed, in total, from the vMachine by just hanging
-it from the two motor pullies.
-
-TODO: Photo of full vMachine
-
-You probably want to remove the sled sub-assembly, all the belts and weights
-off to the side while you finish the board and mount the Circuit Board to it.
-
-
-## Mount the Circuit Board and Run Cables
-
+## 6. Mount the Circuit Board and Run Cables
 
 TODO: talk about the circular hole for the cables,
 the position of the circuit board, and provide
@@ -424,7 +413,9 @@ pictures of of the back of the vMachine for
 the cable runs
 
 
-## Mount the Optional Touch Screen and/or LEDs
+<br>
+
+## 7. Mount the Optional Touch Screen and/or LEDs
 
 This may be an entirely separate page.
 
@@ -440,7 +431,24 @@ board.
 TODO: Photos of the LCD Mount assembly process
 
 
-## Sensor Test and Adjustment
+<br>
+
+## 8. Hang the sled and belts on the machine
+
+The entire tangle of belts, weights, and the sled now form a sub-assembly
+that can be placed, or removed, in total, from the vMachine by just hanging
+it from the two motor pullies.
+
+TODO: Photo of full vMachine
+
+You probably want to remove the sled sub-assembly, all the belts and weights
+off to the side while you finish the board and mount the Circuit Board to it.
+
+
+
+<br>
+
+## 9. Sensor Test and Adjustment
 
 Another thing we can do before we attach the high-voltage power supply
 is to calibrate and test the infrred zero sensors.
@@ -448,7 +456,10 @@ is to calibrate and test the infrred zero sensors.
 TODO: Describe and photograph the infrared sensor adjustment process
 
 
-## Plug in the Stepper motors and high-voltage power supply
+
+<br>
+
+## 10. Plug in the Stepper motors and high-voltage power supply
 
 Finally we plug the thing in and turn it on and verify the stepper motors work.
 
@@ -464,7 +475,7 @@ properly we should be able tape a piece of paper to the board based approximatel
 and to run the "ruler.g" test gcode and do our first print!
 
 If that is working well (and we have setup the G55 and G56 coordinate systems
-as per the **installation** pages), at some point we *may* want to run the "draw_boxes.g"
+as per the [Installation](installation.md) page), at some point we *may* want to run the "draw_boxes.g"
 gcode file which will draw some boxes directly on "the board" that will then allow
 us to align 11x8.5 or 12x9 pieces of paper to be taped to the board for more printing.
 
@@ -472,7 +483,10 @@ The project is considered completed when one can print the
 the 11x8.5 or 12x9 test sheets and they come out nice.
 
 
-## Finished!
+
+<br>
+
+## 11. Finished!
 
 And at that point, the vMachine is essentially complete!
 

@@ -38,7 +38,7 @@ locally, right on the ESP32, via the optional **Touch Screen User Interface**, w
 involving any other devices.
 
 This repository includes all of the files and information needed to
-build a copy of this machine.  It includes the needed to **3D print** the plastic
+build a copy of this machine.  It includes the files needed to **3D print** the plastic
 parts, as well as the underlying Fusion 360 designs if you need
 or want to modify the 3D printed parts. It includes all of the **schematics**
 and information needed to breadboard or otherwise create the electronic circuits,
@@ -53,8 +53,8 @@ A specific goal of this vMachine project is that it is generally scalable
 to a larger machine, specifically one that can work with 4x8 feet sheets
 of plywood, using a router to cut the plywood, as with the
 [Maslow CNC](https://www.maslowcnc.com/).
-Credits go to the Maslow team, as my vMachine source code actually
-contains a port of the **Maslow triangular kinematics** to the ESP32.
+Credits go to the Maslow team, as this vMachine source code actually
+contains a *port* of the **Maslow triangular kinematics** to the ESP32.
 I hope to build such a machine in the near future, and it should be
 relatively straight-forward to scale this project up to a larger
 machine of some sort.  The size of the machine is entirely parameterized
@@ -62,7 +62,8 @@ within the software and user interface.
 
 But most importantly, this project establishes a **general approach** to
 building ESP32 based CNC machines of various types, not only the vMachine
-but also typical 3 and 4 axis CNC machines.  It is entirely based on the
+but also typical 3 and 4 axis CNC machines or any other kind of machine
+I might choose to build in the future.  It is entirely based on the
 next generation
 [FluidNC](https://github.com/bdring/FluidNC)
 project, a hugely important codebase that I have
@@ -75,12 +76,14 @@ within the Arduino IDE development environment.
 Included in this repository are a number of ready-to-go **gcode files**
 that you can run on the vMachine.  It is beyond the scope of this project
 to teach you how to use Inkscape, or Flatcam, or Fusion 360, or any other
-available program to create gcode files to feed to the vMachine.
+available program to create gcode files to feed to the vMachine. You
+may use any of those, or any other program you wish, to create gcode
+files to feed to the vMachine.
 
-But, if you build the machine, and populate the SD card from this
-repository, there are some gcode files you can use right away to
+But, if you build the machine, and populate the SD card from the **sdCard folder**
+in this repository, there are some gcode files you can use right away to
 test it, verify it is working correctly, and even produce some nice
-drawings.  You can view the contents of these gcode files to see what
+drawings.  You can also view the contents of these gcode files to see what
 kind of gcode the vMachine expects so that you can produce it with
 any of the above programs, or by hand, as necessary.
 
