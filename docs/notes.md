@@ -1,8 +1,7 @@
-This vMachine readme.md currently contains notes and rants through
-the development of my prototype v_plotter project.  It will be
-pushed off to the side, and new one written before publishing.
+This notes.md contains various notes to myself.
 
-## SDCard rewrite
+
+## Ideas for SDCard rewrite
 
 1. Implement the SD State as a bitwise value
 2. Initialize the SD Card, if present, at startup with notification.
@@ -10,7 +9,6 @@ pushed off to the side, and new one written before publishing.
 4. Issue CLIENT_ALL notifications upon idle removal and insertion of SD Card
 5. Issue CLIENT_ALL Alarms upon ANY SDCard error, including detecting removal
    while a file/dir is open.
-
 5. DONT start() and end() the SD card willy-nilly all over the place
 6. Allow concurrent access where it makes sense.
 7. Really should STOP using the state of the SDCard as a behavior semaphore.
@@ -33,33 +31,6 @@ interrupts due to the job running.
 All I can tell you is that it was a mess, using the SDState as a semaphore
 for all kinds of behaviors.
 
-----------------------------
-
-All SD Card file operations SHALL go through the SDCard object.
-
-The SDCard object SHALL own all the files opened by FluidNC at any time
-so that it can invalidate them (notify clients) upon detecting an SDCard
-removal (error).  At this time removing the SD card while printing does
-nothing.
-
-Files shall have EXLUSIVE mode which means they cannot be deleted
-while open.
-
-Files shall be associated with a client for notifications.
-
-File error notifications shall be sent to all clients.
-
-
-The SDCard object should decide if an operation is illegal or not
-based on the existing open files and their EXCUSIVE modes.
-
-A. Allow exactly ONE SD Card job to be running at a time which
-   precludes serial communications with the gcode machine (except)
-   for immediate operations.
-
-B. It should not be the case that the ESP32 Webserver is limited
-   to one "upload" or "get" at a time.
-
 
 
 ## G codes, M codes, SD Card, Jobs, and multiple concurrent interfaces
@@ -72,37 +43,10 @@ There are purported standards (i.e. GRBL 1.1) but they are not technical specifi
 
 The field is vast, wide, and wild.
 
-### Clients (mulitple concurrent interfaces)
-
-FluidNC supports a plethora of ways in which a client can access it.
-These specificially include the USB Serial Port, communicating with it
-via Wifi at a given IP address using Sockets, HTTP or Telnet, and connecting
-as a Bluetooth device (a RFCONN Serial port, I believe).
-
-Besides the fact that the HTTP Webserver can respond to requests,
-like listing directories and uploading/downloading/deleting files
-and directories on the SD card, MOST of the behavior appears to be
-directed to serial communications over one of the following "clients".
-
-    #define CLIENT_SERIAL 0
-    #define CLIENT_BT 1
-    #define CLIENT_WEBUI 2
-    #define CLIENT_TELNET 3
-    #define CLIENT_INPUT 4
-
-CLIENT_INPUT appears to be ONLY for internal use by the FluidNC
-code as a way to push "user defined macros" to the gcode machine
-at the behest of the other clients.
-
-To which I am adding
-
-    #define CLIENT_UI 5
-
 
 ### Lack of "job" demarcations
 
-In 'gcode' there is no standardized
-encapsulation of a "job".
+In 'gcode' there is no standardized encapsulation of a "job".
 
 Note that there is not even a documented "standard set" of gcodes
 related to GRBL 1.1 .. try to find it!  If you dig, you will get
@@ -115,155 +59,18 @@ be abused as a way to insert a comment."
 
 Handy.
 
-Though I have yet to explore the implementation,
-the "knowns" are M2/M30 which signals the END of valid gcode in a gcode
-file.  There is also the fact that various 'gcode standards' say that
-a lone percent sign on the first non-blank line of a gocde file signals
-the beginning of a gcode stream, and a subsequent percent sign signals
-the end of the stream.  In files, at least, no gcodes (lines) after M30 or a
-second percent sign "are to be acted upon".
-
-Also, please note the weird usage of the terminology "upload" in the
-FluidNC web/API.   An http "upload" request from a client is used, for
-example, to return a directory listing, delete files, etc.  I'm
-still looking for "download" in this twisted sense of things.
-FluidNC sees things from it's own view, I guess, so "uploading"
-means that the CLIENT is uploading ... whereas the rest of the world
-would expect the opposited sense.
-
 There is no consistent concept for starting and ending jobs
 with streaming interfaces, except, perhaps in the G28? "send
 file to the SD card" command, where the percent signs (should
 be) (are) mandatory to signal the start end end of the file
 for transmission over the serial port.
 
-### SD Card
 
-The SD Card appears to be an after-thought.
-
-The SD Card implementation does not follow any known standard and,
-in my view, fails to exhibit reasonable behavior.
-
-The fallback position of FluidNC is that only one "client"
-can access the SD Card at a given time, the cannonical case being
-when it "runs" a gcode file from the SD Card, then (a) it locks
-out any "gcode execution" except for "immediate commands" from any other
-clients, and (b) locks out anyone (including the executing client)
-from accessing the SD Card.
-
-This behavior is extremely limited, frustrating, and counter-productive.
-
-The cannonical case is that while a given SD card job is running,
-there is no reason that all other clients should be dis-alllowed
-from listing and traversing the contents of the the SD card.
-The only restrictions SHOULD BE that no other client should be
-able to "release" the SD Card nor delete or overwrite the file
-that is being printed, nor delete any directories that hold it.
-
-There may be concerns with the atomicitiy of actions on the
-FATFS as well as concerns about flushing to the SD card and
-making sure the SD card is up-to date after any operation on
-it, but it is my impresssion that the FATFS implementation is
-likely "thread safe" on a per-file-handle basis.
-
-From google: "Yes, FATFS is thread safe as long as the threads
-access different files. NVS is also thread safe (all operations are
-serialized).Apr 4, 2019"
-
-As a result of the lame implementation, I really don't like the way
-FluidNC assumes that it can (must) call SD.end() and SD.begin()
-asynchronously based upon client events.  The lame implementation
-leads directly to the restrictive, complicated, and inconsistent
-behavior.
-
-
-### Everything that affects the SD Card
-
-GCODE commands
-
-    There do not appear to be any G or M codes associated
-    with the SD Card supported by FluidNC
-
-ESP/Extended Commands
-
-    "ESP200", "SD/Status"
-    "ESP210", "SD/List"
-    "ESP215", "SD/Delete"
-    "ESP220", "SD/Run"          sets SDCard::BusyPrinting
-    "ESP221", "SD/Show"         sets SDCard::BusyPrinting
-
-WebServer
-
-    This completely undocumented and complicated interface goes something like this:
-
-    Any url that starts with /SD/blah
-
-        If "blah" or "blah.gz" is the name of an existing SD Card file it is presumed
-        to be an "upload" (which is backwards terminology) of that asset TO the client.
-        It is essentially a "get" of the file.  Sets SDCard::BusyUploading
-
-    _webServer.on("/upload", HTTP_ANY, handle_direct_SDFileList, SDFile_direct_upload")
-
-        These urls return JSON results.
-
-        Further rant: Only took me 1/2 hour to find the parameters to WebServer.on().
-        The first function is for HTTP_ANY (HTTP_GET).  The second function is for
-        HTTP_POST (shouldn't that be HTTP_PUT?)
-
-        a GET that starts with /upload triggers a call to handle_direct_SDFileList
-
-            presumably the rest of the URI matters (and becomes the initial filename/path)
-            though the url parameter 'path' will be appended to it
-
-            may have an 'action' url/post param which can be one of the following:
-
-                delete
-                deletedir
-                createdir
-
-            and an optional parameter dontlist which *may* take on the value of 'yes'
-            indicating that a file list need not be returned in the json result.
-
-        a POST that starts with /upload triggers a call to SDFile_direct_upload
-
-            presumably /upload is the entire path and everythng else
-            is passed in as url or post arguments.
-
-            sets SDCard::BusyParsing
-
-            the ESP32 WebServer appears to have built-in support for parsing
-            "uploads" and can return an "HTTPUpload" object that has things
-            like the filename in it.
-
-                    if (upload.status == UPLOAD_FILE_START) {
-                    _upload_status = UploadStatusType::ONGOING;
-                    filename       = upload.filename;
-
-                    if (upload.status == UPLOAD_FILE_WRITE) {
-                        vTaskDelay(1 / portTICK_RATE_MS);
-                        if (sdUploadFile && (_upload_status == UploadStatusType::ONGOING) && (get_sd_state(false) == SDState::BusyUploading)) {
-                            //no error write post data
-                            if (upload.currentSize != sdUploadFile.write(upload.buf, upload.currentSize)) {
-                                _upload_status = UploadStatusType::FAILED;
-
-            SDFile_direct_upload() is not re-entrant.
-            It uses a single static FILE sdUploadFile
-
-CLIENT_INPUT - Internal Behavior (macro files)
-
-    CLIENT_INPUT is used in user_defined_macro() to send
-    buffered input to the gcode machine. user_defined_macro()
-    is only allowed during sys.state==State::Idle
-
-    It is also used in a couple of (bdring's) "Custom" machines
-    including the atari_1020 and the polar_coaster.
-
-    It does not, per se, typically directly affect the SD card.
+### Gcode Analsyis
 
 For completeness, please note the following RepRap M codes which are
 NOT part of GRBL ... these codes have completely different semantics
 in GRBL and there are no equivilants in FluidNC:
-
 
     M21 Initialise (mount) SD Card
     M22 Release (unmount) SD Card
@@ -276,33 +83,6 @@ in GRBL and there are no equivilants in FluidNC:
     M29 Stop writing programm to SD Card
 
 
-### SD Card State
-
-Is currently represented as an enum, when it needs to be bitwise.
-
-The major important state, BUSY (same as BUSYPRINTING) is overloaded to
-affect the behavior of the system in incestuous ways.
-
-Cannonical example is the use of SDState::BusyPrinting along with the
-global variable SD_Ready_Next to cause Protocol to "read another
-line" from the (presumed) "running" file.
-
-    enum class SDState : uint8_t {
-        Idle          = 0,
-        NotPresent    = 1,
-        Busy          = 2,      // Never set, but checked with comparison <BUSY
-        BusyPrinting  = 2,
-            // set in SDCard::openFile(),
-            // which is only called from WebSettings::openSDFile(),
-            // which is only called from runSDFile and showSDFile
-            // which correspond to the  "ESP220=SD/Run" and
-            // "ESP221=SD/Show" commands
-        BusyUploading = 3,      // set in HTTP Get to /SD/
-        BusyParsing   = 4,      // set in HTTP POST to /upload SDFile_direct_upload which is different than BusyUploading
-    };
-
-
-IT EFFING SUCKS.  A lot of work before I can write a UI.
 
 
 
@@ -371,14 +151,15 @@ And can either switch to the G55 coordinate system manually,
 or via the header/footer in inkscape
 
 
+
 ## COORDINATE SYSTEMS DETAILS
 
-sys_position = an array of int32s representing the stepper motor position in steps
+motor_steps = an array of int32s representing the stepper motor position in steps
 motor position = floats in mm's == sys_position / axis_settings->steps_per_mm
 machine position = floats called "mpos" which is the cartesian coordinate within the work area,
 work position =  floats (wpos) that lets you set 0,0 relative to the machine area.
 
-The "motor position" and sys_position are representative of the chain (cable) lengths.
+The "motor position" and motor_steps are representative of the chain (cable) lengths.
 
 The system does not maintain the motor, machine, or work positions.
 It only maintains the int32 sys_positions.
@@ -388,7 +169,7 @@ next point in some gcode) it calls cartesianToMotors() to get the "motor positio
 for that coordinate, which it then turns back into sys_position steps for planning
 and actual movement.
 
-For reporting, sys_position ==> motor position is turned into the "machine position" by
+For reporting, motor_steps is turned into the "machine position" by
 calling motors_to_cartesian() (forward kinematics), which in turn, does
 iterative calls to the reverse kinematics to find a "machine_position" that matches
 the motor position.  These forward kinematics are normally not needed to run FluidNC,
@@ -396,6 +177,9 @@ they are used only for reporting.
 
 
 ## HOMING AND ZERO STOPS
+
+OLD NUMBERS!
+
 
 ```
 #define ZERO_LENGTH  223.959     // mm. just about 224
@@ -547,7 +331,7 @@ per feed move, and if the max_rate is 4000mm/minute, pretty quick to retract.
    I'm wonked out!
 
 
-## SD Card
+## SD Card Resistor
 
 **I always had problems with the SDCard on power on resets**
 
@@ -558,7 +342,6 @@ which seemed to make it work.
 5V out over MISO and could damage the ESP32.
 
 **The 1K pull on MISO made it work.**
-
 
 Adding the SD Card Module to my prototype circuit required almost
 no code changes (except to fix a stack overflow) but was complicated
@@ -597,45 +380,6 @@ Serial (gcode) command line, but it was obscure information.
 There is an obsolete webpage up that says you can use the $FM
 command to mount the SDCard and $F to list files, but those give
 "Error:20" (unsupported GCode).
-
-Finally I figured out that the author had gotten rid of that scheme
-and created ESP32 specific commands (typed into the serial port WITH
-the brackets) as follows:
-
-     Serial port command        websockets 'path'      description
-
-     [ESP200]                    SD/Status   Show the SD Status
-     [ESP210]                    SD/List     Return a full recursive list of the SD Card including space statistics
-     [ESP215]<file/dir name>     SD/Delete   Delete SD Card file / directory
-     [ESP220]<filename>          SD/Run      Print SD file (where "Print" means "run", sheesh)
-     [ESP221]<filename>          SD/Show     Show SD file (dump the contents to the serial port)
-
-Note that these appear to be 'handled' b the WebSettings.cpp file regardles
-if they are entered into the serial window ... complifuckincated
-
-I believe that represents the entire approach to the SDCard.
-Of coursse, the WebUI then shows stuff, etc.
-
-All of these commands can take an optional "pwd=<user/admin password" parameter too
-There does not seem to be a way to "upload" a gcode file from a sender, only
-from the WebUI (websockets)
-
-FINALLY, I noticed there was a stack overflow in the clientCheckTask method.
-from the Serial Monitor. I copied from it, and searched for:
-
-  FluidNC ***ERROR*** A stack overflow in task clientCheckTask has been detected.
-
-I got hits on other programs that had tasks with stack overflows and they had solved
-them by changing the stacksize parameter to the (Esperif Systems) "xTaskCreatePinnedToCore"
-method.  I searched FluidNC for "xTaskCreatePinnedToCore" and found the one for
-clientCheckTask in Serial.cpp.   I doubled the stack size parameter from 4096 to 8192
-and the WebUI, as is, started working.
-
-You have to manually hit the "refresh" button in the webUI.  It does not
-automatically show the SD Card fils upon startup.
-
-I reverted my changes to SDCard.cpp (debugging in get_sd_state() method),
-and thats how it stands right now.
 
 ### MISO Pullup Resistor
 
