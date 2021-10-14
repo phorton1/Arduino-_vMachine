@@ -62,10 +62,14 @@ axes:
 comms:
     wifi_sta:
         ssid: THX36
+    wifi_ap:
+        ssid: vMachine
     
+    # set a machine specific AP SSID and
     # as a concession to convenience, I leave the checked-in config.yaml
     # with my wifi SSID.  For users, it will fail to connect and fall back
-    # to the FluidNC Access Point with password 12345678
+    # to the vMachine Access Point with password 12345678
+    
     
 spi:
     # one has to tell FluidNC the default ESP32 SPI pins!

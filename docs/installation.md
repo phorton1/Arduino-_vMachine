@@ -104,13 +104,13 @@ or via **Touch Screen UI** *Files* window.
 
 ## 6. Connect to the vMachine with the Web UI
 
-By default the vMachine will present itself as a Wifi Access Point called **FluiidNC**
+By default the vMachine will present itself as a Wifi Access Point called **vMachine**
 
-- connect your compputer or phone to the **FluidNC** Wifi Access Point
+- connect your compputer or phone to the **vMachine** Wifi Access Point
 - the default password is **12345678**
 
-As soon as you connect to the FluidNC access point, a browser should pop up
-and you should see the FluidNC Web UI for the vMachine:
+As soon as you connect to the vMachine access point, a browser should pop up
+and you should see the Web UI for the vMachine:
 
 ![FluidNC_WebUI.jpg](images/FluidNC_WebUI.jpg)
 
@@ -121,7 +121,7 @@ via the default IP address of **10.0.0.1**.
 ### Configuring the Wifi
 
 There are a number of commands that you can use to configure the
-vMachine/FluidNC/ESP32 Wifi.
+wifi for the vMachine/FluidNC/ESP32 machine.
 
 You can make it connect to your
 existing Wifi network by issuing the following commands:
