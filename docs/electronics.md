@@ -1,10 +1,9 @@
 # The vMachine - Electronics
 
-**[Home](readne.md)** --
+**[Home](readme.md)** --
 **[History](history.md)** --
 **[Hardware](hardware.md)** --
 **Electronics** --
-**[User Interface](ui.md)** --
 **[Software](software.md)** --
 **[Installation](installation.md)**
 
@@ -186,5 +185,5 @@ connector on the controller board.
 <br>
 <hr>
 <div style="text-align: right">
-<a href='ui.md'>NEXT</a><i> - the vMachine User Interface ...</i>
+<a href='software.md'>NEXT</a><i> - the vMachine Software ...</i>
 </div>

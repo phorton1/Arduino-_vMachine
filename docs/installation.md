@@ -1,10 +1,9 @@
 # The vMachine - Installation
 
-**[Home](readne.md)** --
+**[Home](readme.md)** --
 **[History](history.md)** --
 **[Hardware](hardware.md)** --
 **[Electronics](electronics.md)** --
-**[User Interface](ui.md)** --
 **[Software](software.md)** --
 **Installation**
 
@@ -114,14 +113,14 @@ and you should see the Web UI for the vMachine:
 
 ![FluidNC_WebUI.jpg](images/FluidNC_WebUI.jpg)
 
-If that does not happen, you may be able to access it, once connected,
+If that does not happen, you ***may*** be able to access it, once connected,
 via the default IP address of **10.0.0.1**.
 
 
 ### Configuring the Wifi
 
 There are a number of commands that you can use to configure the
-wifi for the vMachine/FluidNC/ESP32 machine.
+wifi for the vMachine.
 
 You can make it connect to your
 existing Wifi network by issuing the following commands:
@@ -152,11 +151,12 @@ are a number of different approaches available.
 
 ## 7. Finished!!
 
-**Congratulations!  You now have a working vMachine!**
+**Congratulations!  You now have burned the firmware for a working
+vMachine to the ESP32 module!!!**
 
 
 <br>
 <hr>
 <div style="text-align: right">
-<a href='readne.md'>HOME</a><i> - back to the beginning!</i>
+<a href='readme.md'>HOME</a><i> - back to the beginning!</i>
 </div>

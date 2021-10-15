@@ -1,10 +1,9 @@
 # The vMachine - History
 
-**[Home](readne.md)** --
+**[Home](readme.md)** --
 **History** --
 **[Hardware](hardware.md)** --
 **[Electronics](electronics.md)** --
-**[User Interface](ui.md)** --
 **[Software](software.md)** --
 **[Installation](installation.md)**
 

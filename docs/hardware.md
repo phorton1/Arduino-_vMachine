@@ -1,10 +1,9 @@
 # The vMachine - Hardware
 
-**[Home](readne.md)** --
+**[Home](readme.md)** --
 **[History](history.md)** --
 **Hardware** --
 **[Electronics](electronics.md)** --
-**[User Interface](ui.md)** --
 **[Software](software.md)** --
 **[Installation](installation.md)**
 
@@ -313,19 +312,19 @@ with the minus-70 and minus-90 gcode commands.
 It's easier to play with this part on your desk than on the machine, so
 let's setup the Sharpie pen position before mounting more stuff.
 
-The *pen_tip* part is inserted into the end of the pen_shaft.  You should find
+The **pen_tip** part is inserted into the end of the pen_shaft.  You should find
 that it is a snug fit as-is from the 3D printing.
-With the pen_tip inserted into the pen_shaft you
-should be able to insert a Sharpie into the assembly such that the tip of the
+With the **pen_tip** part inserted into the **pen_shaft** you
+should be able to insert a **Sharpie** into the assembly such that the tip of the
 Sharpie just protrudes past the end of the pen_shaft by a mm or two as in
 the below photo.
 
 [![pen_tip.jpg](images/pen_tip_resized.jpg)](images/pen_tip.jpg)
 
-You can adjust the position of the "pen_tip" part by moving it in or
-out of the pen_shaft as needed.   When everything is correctly positioned
-and the pen_shaft is inserted in the pen_base, and the servo is in the
-"pen down" position, the tip of the sharpie should protrude just past the
+You can adjust the position of the **pen_tip** part by moving it in or
+out of the **pen_shaft** as needed.   When everything is correctly positioned
+and the pen_shaft is inserted in the ***sled_base***, and the servo is in the
+"pen down" position, the tip of the Sharpie should protrude just past the
 bottom of the sled_base by approximately 1/2 mm.
 
 [![sled_bottom.jpg](images/sled_bottom_resized.jpg)](images/sled_bottom.jpg)
