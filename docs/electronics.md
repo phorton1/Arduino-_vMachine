@@ -13,6 +13,9 @@ as the infrared **sensor board** and a small pcb used as the **lcd connector**.
 The **controller board** has a number of features on it that you may or may not
 want and that may be considered "optional" in the bigger scheme of things.
 
+[![controller_soldered.jpg](images/controller_soldered.jpg)](images/controller_soldered_large.jpg)
+
+
 - eight pin display connector
 - three pin ws2812b led strip connector
 - power supply jack and step down buck convertor
@@ -84,8 +87,6 @@ link to them from here
 [![vMachine_controller_milled.jpg](images/vMachine_controller_milled_resized.jpg)](images/vMachine_controller_milled.jpg)
 
 
-TODO: photo of soldered board
-
 **CAUTION:** after soldering the headers, connectors, and components
 to this board
 **BEFORE** inserting the ESP32 MODULE or connecting any other connectors,
@@ -102,9 +103,9 @@ you use a 20-24V power supply, by sending 10 or 12V to the
 ESP32 which is only rated at 5V!!!
 
 
-TODO: photo of populated board
+[![controller_populated.jpg](images/controller_populated.jpg)](images/controller_populated_large.jpg)
+[![controller_connected.jpg](images/controller_connected.jpg)](images/controller_connected_large.jpg)
 
-TODO: photo of connected board
 
 <br>
 

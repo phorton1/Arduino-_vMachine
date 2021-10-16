@@ -405,28 +405,48 @@ it, more or less exactly as expected.
 
 ## 6. Mount the Circuit Board and Run Cables
 
-TODO: talk about the circular hole for the cables,
-the position of the circuit board, and provide
-pictures of of the back of the vMachine for
-the cable runs
+I made some "extension cables" for the sensors,
+drilled a 3/4" hole for the cables in the bottom right corner of the
+board, and taped the cables to the back of the board.
+
+[![board_hole.jpg](images/board_hole.jpg)](images/board_hole_large.jpg)
+[![board_back.jpg](images/board_back.jpg)](images/board_back_large.jpg)
+
+Then using four M3x12 wood/metal screws and four plastic spacers,
+I mounted the circuit board to the wooden board.
+
+[![board_mount1.jpg](images/board_mount1.jpg)](images/board_mount1_large.jpg)
+[![board_mount2.jpg](images/board_mount2.jpg)](images/board_mount2_large.jpg)
+
+The board must be mounted **well out of the way of the sled and cables** in
+any position the machine might find itself in, so I chose the bottom right
+corner of the wooden board.   The circuit board is mounted just below, and
+to the right, of the hole that I drilled for the cables to come through.
+
 
 
 <br>
 
 ## 7. Mount the Optional Touch Screen and/or LEDs
 
-This may be an entirely separate page.
 
-- mount the Touch Screen in the LCD housing with four M3x8 screws and
+Mount the Touch Screen in the LCD housing with four M3x8 screws and
 bolts.  Tighten the screws snugly, but not so tight as to warp the
 plastic or Touch Screen.
-- press the WS2812B LCD strip into place and secure it with the
+
+[![mount_touchscreen.jpg](images/mount_touchscreen.jpg)](images/mount_touchscreen_large.jpg)
+[![led_strip.jpg](images/led_strip.jpg)](images/led_strip_large.jpg)
+
+
+Press the WS2812B LCD strip into place and secure it with the
 LED cover piece and two M2x5mm screws directly into the plastic.
-- Mount the entire assembly just above the cicuit board and
+
+[![mount_led_strip.jpg](images/mount_led_strip.jpg)](images/mount_led_strip_large.jpg)
+[![mount_tft.jpg](images/mount_tft.jpg)](images/mount_tft_large.jpg)
+
+You can then mount the entire assembly just above the cicuit board and
 attach the LCD connector and LED strip connectors to the circuit
 board.
-
-TODO: Photos of the LCD Mount assembly process
 
 
 <br>
@@ -437,7 +457,7 @@ The entire tangle of belts, weights, and the sled now form a sub-assembly
 that can be placed, or removed, in total, from the vMachine by just hanging
 it from the two motor pullies.
 
-TODO: Photo of full vMachine
+[![sled_tangle.jpg](images/sled_tangle.jpg)](images/sled_tangle_large.jpg)
 
 You probably want to remove the sled sub-assembly, all the belts and weights
 off to the side while you finish the board and mount the Circuit Board to it.
@@ -449,9 +469,13 @@ off to the side while you finish the board and mount the Circuit Board to it.
 ## 9. Sensor Test and Adjustment
 
 Another thing we can do before we attach the high-voltage power supply
-is to calibrate and test the infrred zero sensors.
+is to calibrate and test the infrared zero sensors.
 
-TODO: Describe and photograph the infrared sensor adjustment process
+This is done by moving the belts back and forth and adjusting
+the screws on the trim potentiometer on the Sensor circuit board
+so that the LED turns **ON** when the aluminum strip passes under
+the sensor, but turns **OFF** when the strip is not under the
+sensor.
 
 
 
@@ -460,10 +484,6 @@ TODO: Describe and photograph the infrared sensor adjustment process
 ## 10. Plug in the Stepper motors and high-voltage power supply
 
 Finally we plug the thing in and turn it on and verify the stepper motors work.
-
-TODO: Photo of circuit board and power connector.
-
-TODO: Talk about using the external power supply at the same time as USB.
 
 If the stepper motors and the sensors are working, we should be able to do a
 "Homing" cycle and execute the "center.g" test gcode.
@@ -487,6 +507,8 @@ the 11x8.5 or 12x9 test sheets and they come out nice.
 ## 11. Finished!
 
 And at that point, the vMachine is essentially complete!
+
+TODO: Image of finished vMachine hardware
 
 
 <br>
