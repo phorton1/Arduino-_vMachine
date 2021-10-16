@@ -27,11 +27,16 @@ You then need to add a number of libraries to your **Arduino/libraries** folder.
 Some of these libraries have additional dependencies on other libraries.
 Please follow the instructions on the linked pages to install each library and it's dependencies.
 
-- install my version of the [**FluidNC**](https://github.com/phorton1/Arduino-libraries-FluidNC) library and it's dependenciea
+- install my version of the [**FluidNC**](https://github.com/phorton1/Arduino-libraries-FluidNC) library and it's dependenciea:
+    - **arduinoWebSockets** (included in the FluidNC repository)
+    - **ESP32SSDP** (included in the FluidNC repository)
+    - **TMCStepper** (installed using the Arduino IDE *Library Manager*)
 - install my [**FluidNC_extensions**](https://github.com/phorton1/Arduino-libraries-FluidNC_extensions) library
 - If you are building the machine with the (optional) TFT Display
  (by default **WITH_UI** is defined in vMachine.h),
- then install my [**FluidNC_UI**](https://github.com/phorton1/Arduino-libraries-FluidNC_UI) library
+ then install my [**FluidNC_UI**](https://github.com/phorton1/Arduino-libraries-FluidNC_UI) library, and it's
+ dependency:
+     - [**TFT_eSPI**](https://github.com/phorton1/Arduino-libraries-TFT_eSPI) (my slightly modified and pre-configured fork of the TFT_eSPI library)
 - If you are building the machine with the (optional) ws2812b LEDS
  (by default **WITH_PIXELS** is defined in vMachine.h)
  then install the **Adafruit Neopixel** library using the Arduino *Library Manager*

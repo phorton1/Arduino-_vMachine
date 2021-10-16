@@ -192,12 +192,12 @@ core.  Specific contents at this time include:
 
 <br>
 
-## License
+## Credits and License
 
-I'm gonna have to do something here.  Yech, I hate those headers in source files.
+This library is licensed undere the
+[GNU General Public License v3.0](../LICENSE.TXT)
 
-
-## Credits
+**Credits**
 
 - To the [Maslow CNC](https://www.maslowcnc.com/) team for the kinematics.
 
