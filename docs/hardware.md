@@ -4,7 +4,6 @@
 **[History](history.md)** --
 **Hardware** --
 **[Electronics](electronics.md)** --
-**[Software](software.md)** --
 **[Installation](installation.md)**
 
 ## Parts List
@@ -219,8 +218,8 @@ sled_cap to secure it.
 
 (This section assumes that you have already installed the needed software,
 and built and uploaded the firmware to the ESP32.  Please see the
-**[Software](software.md)** and **[Installation](installation.md)**
-pages for more details)
+**[Installation](installation.md)**
+page for more details.
 
 Before attaching the stepper motors or high-voltage (19.5V) power supply,
 we want to run the ESP32 on USB power and verify the functionality and

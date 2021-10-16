@@ -123,8 +123,6 @@ photos of early prototypes and previous versions of the vMachine.
 construction of the vMachine, including the 3D printing and mechanical parts.
 - **[Electronics](electronics.md)** - the schematics and home made circuit
 boards for the machine.
-- **[Software](software.md)** - an overview of the software architecture
-of the vMachine and FluidNC.
 - **[Installation](Installation.md)** - instructions on building and installing
 the vMachine firmware onto the ESP32 using the Arduino IDE environment.
 

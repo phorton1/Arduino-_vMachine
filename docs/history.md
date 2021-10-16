@@ -4,7 +4,6 @@
 **History** --
 **[Hardware](hardware.md)** --
 **[Electronics](electronics.md)** --
-**[Software](software.md)** --
 **[Installation](installation.md)**
 
 After deciding that I would use an ESP32 for the machine, a search for available software
@@ -13,7 +12,7 @@ since been advanced and renamed to **FluidNC**).   So a large chunk of work (sev
 was spent in learning **Grbl_Esp32** and porting the **Maslow** triangular kinematics software
 to it.
 
-We will talk more about the [Software](software.md) on other pages, but at some point I got
+At some point I got
 it working well enough to build a machine and draw a picture.
 
 Here is a timelapse video of the early vMachine printing a picture of a sailboat:
@@ -44,7 +43,7 @@ of the above phote.  You can click on the image for an enlarged version.
 The ESP32, as well as the code, are fairly flexible about pin assigmnents, and you can see
 from the photo the pins I used in this early version.  The pinouts of the "final" vMachine
 are a bit different and can be found on the **[Electronics](electronics.md)** page
-and within the **[software](software.md)** itself.
+and within the **source code** itself.
 
 This photo is intended to merely show that the circuit is relatively simple,
 and can be produced on a breadboard.  There is no SDCard or display wiring on this board,

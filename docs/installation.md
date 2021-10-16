@@ -4,7 +4,6 @@
 **[History](history.md)** --
 **[Hardware](hardware.md)** --
 **[Electronics](electronics.md)** --
-**[Software](software.md)** --
 **Installation**
 
 Some of these instructions are duplicated on and/or reference other pages.
