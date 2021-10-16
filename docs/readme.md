@@ -195,7 +195,7 @@ core.  Specific contents at this time include:
 ## Credits and License
 
 This library is licensed undere the
-[GNU General Public License v3.0](../LICENSE.TXT)
+[GNU General Public License v3.0](https://github.com/phorton1/Arduino-_vMachine/tree/master/LICENSE.TXT)
 
 **Credits**
 
