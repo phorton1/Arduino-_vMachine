@@ -21,7 +21,7 @@ $5, or about half the price of a genuine Arduino.
 Therefore my *primary design decision* was to base this, and my future CNC projects,
 on an ESP32 processor.
 
-**VIDEO - introduction to the vMachine**
+**TODO: VIDEO - introduction to the vMachine**
 
 The vMachine project is intended to accomplish several goals. First, I wanted
 to start developing and publishing open source CNC machines with the ESP32.
@@ -35,6 +35,8 @@ for usage with commonly available gcode sender programs.
 Finally, it can also store gcode files on the optional **SD Card** and run jobs entirely
 locally, right on the ESP32, via the optional **Touch Screen User Interface**, without
 involving any other devices.
+
+**TODO: picture link to the FLUID_NC UI page
 
 This repository includes all of the files and information needed to
 build a copy of this machine.  It includes the files needed to **3D print** the plastic
@@ -87,7 +89,7 @@ drawings.  You can also view the contents of these gcode files to see what
 kind of gcode the vMachine expects so that you can produce it with
 any of the above programs, or by hand, as necessary.
 
-**VIDEO - Running the Demo Files**
+**TODO: VIDEO - Running the vMachine Demo Files**
 
 The video above demonstrates the touch screen UI, the browser
 based Web/Wifi UI, and the serial terminal user interface by running the following
