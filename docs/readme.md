@@ -161,7 +161,7 @@ number of other libraries that provide the bulk of the functionality.
 - [**FluidNC_UI**](https://github.com/phorton1/Arduino-libraries-FluidNC_UI) - a *touch screen user interface* for FluidNC
 - [**FluidNC_extensions**](https://github.com/phorton1/Arduino-libraries-FluidNC_extensions) - some extensions to FluidNC
 
-The core of the machine, the GRBL (g-code) interpreter, is based on the
+The core of the machines, the GRBL (g-code) interpreter, is based on the
 [**FluidNC**](https://github.com/phorton1/Arduino-libraries-FluidNC)
 library.  The operational details of the machine, what g-codes
 are supported, the basic serial command protocol, the wifi and webserver,
@@ -200,9 +200,7 @@ This library is licensed undere the
 **Credits**
 
 - To the [Maslow CNC](https://www.maslowcnc.com/) team for the kinematics.
-
-- To **bdring** and the [FluidNC Team](https://github.com/bdring/FluidNC) for the core of this project.
-
+- To **bdring** and the **FluidNC Team**
 
 
 <br>
