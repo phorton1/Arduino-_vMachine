@@ -594,13 +594,16 @@ void  Kinematics::forward(
                 guessLengthA > max_guess_chain_length ||
                 guessLengthB > max_guess_chain_length)
             {
-                if (!in_homing)
-                    g_info("forward count:%d chainLength(%f,%f) guessLength(%f,%f) returning(%f,%f) Unable to find valid machine position for chain lengths",
-                        guessCount,
-                        chainALength,
-                        chainBLength,
-                        guessLengthA,
-                        guessLengthB);
+                #if DEBUG_FORWARD
+                    if (!in_homing)
+                        g_info("forward count:%d chainLength(%f,%f) guessLength(%f,%f) returning(%f,%f) Unable to find valid machine position for chain lengths",
+                            guessCount,
+                            chainALength,
+                            chainBLength,
+                            guessLengthA,
+                            guessLengthB);
+                #endif
+
                 *xPos = initial_xGuess;
                 *yPos = initial_yGuess;
                 return;

@@ -4,8 +4,6 @@
 name: "vMachine"
 board: "vMachine Dev Board"
 
-homing_init_lock: false
-
 stepping:
     engine: RMT
     idle_ms: 250
@@ -13,73 +11,67 @@ stepping:
     dir_delay_us: 1
     disable_delay_us: 0
 
+
+
 axes:
-    shared_stepper_disable: gpio.27
+    shared_stepper_disable_pin: gpio.27
         
     x:
         steps_per_mm: 50
-        max_rate: 4000
-        acceleration: 200
-        max_travel: 1000
+        max_rate_mm_per_min: 4000
+        acceleration_mm_per_sec2: 200
+        max_travel_mm: 1000
         # soft_limits: true
         motor0:
-            pulloff: 15
+            pulloff_mm: 15
             standard_stepper:
-                step: gpio.13
-                direction: gpio.14
+                step_pin: gpio.13
+                direction_pin: gpio.14
         homing:
             cycle: 1
-            seek_rate: 4000
-            feed_rate: 400
+            seek_mm_per_min: 4000
+            feed_mm_per_min: 400
             
     y:
         steps_per_mm: 50
-        max_rate: 4000
-        acceleration: 200
-        max_travel: 1000
+        max_rate_mm_per_min: 4000
+        acceleration_mm_per_sec2: 200
+        max_travel_mm: 1000
         # soft_limits: true
         motor0:
-            pulloff: 15
+            pulloff_mm: 15
             standard_stepper:
-                step: gpio.26
-                direction: gpio.25:low
+                step_pin: gpio.26
+                direction_pin: gpio.25:low
                     # invert the sense of the Y directio pin
         homing:
             cycle: 1
-            seek_rate: 4000
-            feed_rate: 400
+            seek_mm_per_min: 4000
+            feed_mm_per_min: 400
             
     z:
         steps_per_mm: 10
-        max_rate: 10000
-        acceleration: 1000
-        max_travel: 90
+        max_rate_mm_per_min: 10000
+        acceleration_mm_per_sec2: 1000
+        max_travel_mm: 90
         # soft_limits: true
         motor0:
             rc_servo:
                 output_pin: gpio.33
             
-comms:
-    wifi_sta:
-        ssid: THX36
-    wifi_ap:
-        ssid: vMachine
-    
-    # set a machine specific AP SSID and
-    # as a concession to convenience, I leave the checked-in config.yaml
-    # with my wifi SSID.  For users, it will fail to connect and fall back
-    # to the vMachine Access Point with password 12345678
-    
+
+start:
+  must_home: false
     
 spi:
     # one has to tell FluidNC the default ESP32 SPI pins!
-    miso: gpio.19
-    mosi: gpio.23
-    sck: gpio.18
+    miso_pin: gpio.19
+    mosi_pin: gpio.23
+    sck_pin: gpio.18
     
 sdcard:
     # and then one can specify the specific cs used for the SDCard
-    cs: gpio.4
-    card_detect: NO_PIN
+    cs_pin: gpio.4
+    card_detect_pin: NO_PIN
 
   
