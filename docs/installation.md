@@ -107,12 +107,12 @@ or via **Touch Screen UI** *Files* window.
 
 ## 6. Connect to the vMachine with the Web UI
 
-By default the vMachine will present itself as a Wifi Access Point called **vMachine**
+By default the vMachine will present itself as a Wifi Access Point called **FluidNC**
 
-- connect your compputer or phone to the **vMachine** Wifi Access Point
+- connect your compputer or phone to the **FluidNC** Wifi Access Point
 - the default password is **12345678**
 
-As soon as you connect to the vMachine access point, a browser should pop up
+As soon as you connect to the FluidNC access point, a browser should pop up
 and you should see the Web UI for the vMachine:
 
 ![FluidNC_WebUI.jpg](images/FluidNC_WebUI.jpg)
@@ -130,21 +130,13 @@ You can make it connect to your
 existing Wifi network by issuing the following commands:
 
 ```yaml
-$comms/wifi_sta/SSID=YOUR_NET_SSID
-$sta/password=YOUR_NET_PASSWORD
+$Sta/SSID=YOUR_NET_SSID
+$Sta/password=YOUR_NET_PASSWORD
 ```
 
 You can then connect to it using the IP address given by your router,
 which you can see either in the Serial Terminal Window or at the
 top, in the Title Bar, of the Touch Screen UI.
-
-You can also modify the **config.yaml** file to set the
-comms/wifi_sta/SSID to YOUR_NET_SSID and use the
-**Tools - ESP32 Sketch Data Upload**  to upload the config.yaml file to the
-EPS32 to set the Station SSID ... but note that you **must**
-use the Serial Terminal to enter the password.   The password
-is not stored in the YAML file.
-
 
 It is beyond the scope of this page to describe all of the commands
 and techniques that you can use to configure and modify the
