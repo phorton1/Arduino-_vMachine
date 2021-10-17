@@ -21,7 +21,7 @@ $5, or about half the price of a genuine Arduino.
 Therefore my *primary design decision* was to base this, and my future CNC projects,
 on an ESP32 processor.
 
-**TODO: VIDEO - introduction to the vMachine**
+**TODO: VIDEO - introduction to the vMachine (good thumbnail for front image**
 
 The vMachine project is intended to accomplish several goals. First, I wanted
 to start developing and publishing open source CNC machines with the ESP32.
@@ -33,10 +33,12 @@ controlled wirelessly from your phone or computer via **WiFi**.  It can also be 
 via the **serial port** on the ESP32, via **Telnet** on port 23, or via **Bluetooth**
 for usage with commonly available gcode sender programs.
 Finally, it can also store gcode files on the optional **SD Card** and run jobs entirely
-locally, right on the ESP32, via the optional **Touch Screen User Interface**, without
-involving any other devices.
+locally, right on the ESP32, via the optional
+[**Touch Screen User Interface**](https://github.com/phorton1/Arduino-libraries-FluidNC_UI)
+, without involving any other devices.
 
-**TODO: picture link to the FLUID_NC UI page
+[![ui_screen.jpg](images/ui_screen.jpg)](https://github.com/phorton1/Arduino-libraries-FluidNC_UI)
+
 
 This repository includes all of the files and information needed to
 build a copy of this machine.  It includes the files needed to **3D print** the plastic
@@ -125,6 +127,8 @@ photos of early prototypes and previous versions of the vMachine.
 construction of the vMachine, including the 3D printing and mechanical parts.
 - **[Electronics](electronics.md)** - the schematics and home made circuit
 boards for the machine.
+- **[Software](software.md)** - contains an overview of the
+**software architecture** and details about how to **configure** the vMachine
 - **[Installation](Installation.md)** - instructions on building and installing
 the vMachine firmware onto the ESP32 using the Arduino IDE environment.
 

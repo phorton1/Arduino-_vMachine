@@ -4,6 +4,7 @@
 **History** --
 **[Hardware](hardware.md)** --
 **[Electronics](electronics.md)** --
+**[Software](software.md)** --
 **[Installation](installation.md)**
 
 After deciding that I would use an ESP32 for the machine, a search for available software

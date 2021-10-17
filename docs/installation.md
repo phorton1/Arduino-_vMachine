@@ -4,6 +4,7 @@
 **[History](history.md)** --
 **[Hardware](hardware.md)** --
 **[Electronics](electronics.md)** --
+**[Software](software.md)** --
 **Installation**
 
 Some of these instructions are duplicated on and/or reference other pages.
@@ -140,8 +141,9 @@ top, in the Title Bar, of the Touch Screen UI.
 
 It is beyond the scope of this page to describe all of the commands
 and techniques that you can use to configure and modify the
-vMachine.   But if you have gotten this far, you can see there
-are a number of different approaches available.
+vMachine.  Please see the **[Software](software.md)** page
+for some details.
+
 
 <br>
 

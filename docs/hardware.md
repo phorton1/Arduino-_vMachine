@@ -4,6 +4,7 @@
 **[History](history.md)** --
 **Hardware** --
 **[Electronics](electronics.md)** --
+**[Software](software.md)** --
 **[Installation](installation.md)**
 
 ## Parts List
@@ -508,7 +509,7 @@ the 11x8.5 or 12x9 test sheets and they come out nice.
 
 And at that point, the vMachine is essentially complete!
 
-TODO: Image of finished vMachine hardware
+TODO: Image of finished vMachine
 
 
 <br>

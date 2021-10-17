@@ -4,6 +4,7 @@
 **[History](history.md)** --
 **[Hardware](hardware.md)** --
 **Electronics** --
+**[Software](software.md)** --
 **[Installation](installation.md)**
 
 
@@ -185,5 +186,5 @@ connector on the controller board.
 <br>
 <hr>
 <div style="text-align: right">
-<a href='installation.md'>NEXT</a><i> - Installing and building the firmware ...</i>
+<a href='software.md'>NEXT</a><i> - Software Architecture and Configuration ...</i>
 </div>
