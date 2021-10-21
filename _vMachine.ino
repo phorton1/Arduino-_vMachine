@@ -54,7 +54,7 @@
         // 0x0c - ctrl-L
         // 0x0d - ctrl-M
         // 0x0e - ctrl-N
-        // 0x0f - ctrl-O
+        // 0x0f - ctrl-O    CMD_UI_SCREEN_GRAB_PENDING
         // 0x10 - ctrl-P    CMD_UI_SCREEN_GRAB
         // 0x11 - ctrl-Q	CMD_LIVE_Z_PLUS_COARSE
         // 0x12 - ctrl-R    CMD_LIVE_Z_MINUS_COARSE
@@ -76,10 +76,12 @@
 
         switch (command)
         {
-
-            case CMD_UI_SCREEN_GRAB :
-                gApplication::doScreenGrab();
-                break;
+			case CMD_UI_SCREEN_GRAB :
+				gApplication::doScreenGrab(false);
+				break;
+			case CMD_UI_SCREEN_GRAB_PENDING :
+				gApplication::doScreenGrab(true);
+				break;
         }
     }
 #endif
