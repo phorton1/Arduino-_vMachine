@@ -37,7 +37,7 @@ locally, right on the ESP32, via the optional
 [**Touch Screen User Interface**](https://github.com/phorton1/Arduino-libraries-FluidNC_UI)
 , without involving any other devices.
 
-[![ui_screen.jpg](animated_FluidNC_UI_001.gif)](https://github.com/phorton1/Arduino-libraries-FluidNC_UI)
+[![ui_screen.jpg](images/animated_FluidNC_UI_001.gif)](https://github.com/phorton1/Arduino-libraries-FluidNC_UI)
 
 TODO: create animated gif specific to _vMachine
 
