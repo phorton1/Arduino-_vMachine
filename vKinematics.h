@@ -25,7 +25,7 @@
 extern int prh_debug_forward;
     // see prh debugging code Report.cpp
 extern bool in_homing;
-    // in vMachine.cpp
+    // in vMain.cpp
 
 // #define WITH_QUAD_KINEMATICS
 

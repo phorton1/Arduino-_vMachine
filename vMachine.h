@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <FluidNC.h>                    // FluidNC
 #include <Machine/MachineConfig.h>      // FluidNC - required
 
 #define WITH_UI
@@ -28,7 +29,7 @@
 // #define Z_SERVO_PIN              GPIO_NUM_33
 //
 // SD Card
-
+//
 // Note that HSPI (hardware 2nd SPI) is MOSI(13) MISO(12) CLK(14) CS(15)
 // Uses defaults for ESP32 VSPI library (except CS) which we use for TOUCH_CS
 //

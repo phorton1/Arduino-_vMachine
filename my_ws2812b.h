@@ -1,7 +1,7 @@
 //------------------------------------
 // a ws2812b LED strip
 //------------------------------------
-// static object defined in vMachine.cpp
+// static object defined in vMain.cpp
 
 #pragma once
 #include "vMachine.h"
@@ -26,6 +26,6 @@
     #define MY_LED_WHITE    0x000044
 
     extern Adafruit_NeoPixel pixels;
-        // in vMachine.cpp
+        // in vMain.cpp
 
 #endif
