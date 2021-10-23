@@ -39,9 +39,9 @@ and the **orange** wire (and bus at the top) is for the 19.5V I used to power th
 [![early_breadboard.jpg](images/early_breadboard_resized.jpg)](images/early_breadboard.jpg)
 
 The stepper motors plug into the breadboard via a 4 pin header as in the upper right
-of the above phote.  You can click on the image for an enlarged version.
+of the above photo.  You can click on the image for an enlarged version.
 
-The ESP32, as well as the code, are fairly flexible about pin assigmnents, and you can see
+The ESP32, as well as the code, are fairly flexible about pin assignments, and you can see
 from the photo the pins I used in this early version.  The pinouts of the "final" vMachine
 are a bit different and can be found on the **[Electronics](electronics.md)** page
 and within the **source code** itself.
@@ -52,14 +52,14 @@ but it could actually be used in a functional vMachine by plugging the RC Servo 
 into ground, 5V, and some other pin on the breadboard.
 
 I used an old 19.5V 35W power supply from a broken computer i had laying around.  I removed
-the jack from the broken computer and wired it up with dupont connectors for this initial
+the jack from the broken computer and wired it up with Dupont connectors for this initial
 iteration of the machine.
 
 
 ## Infrared Belt Sensors
 
 An important part of this project, that took quite a bit of time coming up with, was how to
-effect homing switches on the machine.  In order for the triangular kinematics to
+effect homing switches on the machine. In order for the triangular kinematics to
 work, and in general, it is necessary that the machine **"know where it is"**.   So, before
 I even built an actual machine, I decided that I would use an **infrared sensor** and a **white
 stripe** painted on the belt to sense when the machine was in the *home* position.

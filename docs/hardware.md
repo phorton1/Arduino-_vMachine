@@ -12,7 +12,7 @@
 The following parts are needed and/or optional to construct the vMachine.
 
 - the **board**
-- two **nema 17 stepper motors**
+- two **NEMA 17 stepper motors**
 - two one meter 4 wire **cables** with connectors for the stepper motors
 - two 16 tooth 5mm GT2 **pullies** for the stepper motors
 - two meters of 5mm GT2 **belt**
@@ -39,7 +39,7 @@ The board is 28.75" wide by 24" high from 1/2" or 3/8" plywood.
 [![hardware_the_board.jpg](images/hardware_the_board_resized.jpg)](images/hardware_the_board.jpg)
 
 
-I cut some hand-holds into mine and finished it with clear polyurathane.
+I cut some hand-holds into mine and finished it with clear polyurethane.
 
 I drilled the holes for the screws and wires after preparing the board.
 
@@ -90,9 +90,9 @@ The sled consists of several parts
 
 The sled parts are all printed without supports.
 
-[![3d_sled_base.jpg](images/3d_sled_base_resized.jpg)](images/3d_sled_base.jpg)
-[![3d_sled_cap.jpg](images/3d_sled_cap_resized.jpg)](images/3d_sled_cap.jpg)
-[![3d_sled_bearings.jpg](images/3d_sled_bearings_resized.jpg)](images/3d_sled_bearings.jpg)
+[![3D_sled_base.jpg](images/3d_sled_base_resized.jpg)](images/3D_sled_base.jpg)
+[![3D_sled_cap.jpg](images/3d_sled_cap_resized.jpg)](images/3D_sled_cap.jpg)
+[![3D_sled_bearings.jpg](images/3d_sled_bearings_resized.jpg)](images/3D_sled_bearings.jpg)
 
 The **sled_cap** screws onto the sled_base, allowing a little room for the sled bearings to
 move while holding the RC Servo in a more-or-less vertical orientation.
@@ -111,8 +111,8 @@ Before assembling I also put the pen shaft in a drill and turned it while sandin
 could to make it as smooth as possible. I also sanded the inside of the pen cap a bit.
 It is important that the pen_shaft move freely in the pen-cap.
 
-The **pen_tip** is printed (without supports, but with a **4 or 5mm "brim"** for stability.
-It is printed vertically with the *top up*.  The shaft and tip are designed to accomodate a
+The **pen_tip** is printed without supports, but with a **4 or 5mm "brim"** for stability.
+It is printed vertically with the *top up*.  The shaft and tip are designed to accommodate a
 **0.5mm Sharpie** felt pen.  While testing, the **pen_tip** part can be moved
 up and down inside the pen shaft until you get it so that the tip of the felt pen just barely
 touches the board (and lifts the whole assembly up off of the board about 1/2mm) when the
@@ -122,7 +122,7 @@ servo arm is "down".
 ![sharpie1.jpg](images/sharpie1.jpg)
 
 The pen shaft is designed so that when the **servo_arm** is down, it automatically centers itself
-in the pen base (due to the bevelled angles).  The adjustable pen_tip allows you to adjust the actual
+in the pen base (due to the beveled angles).  The adjustable pen_tip allows you to adjust the actual
 contact of the pen with the paper while the shaft is fully down.  The tip of the Sharpie felt pen
 should extend past the base about 1/2 mm when the servo arm is completely down, and it should not move around from
 that position.
@@ -138,15 +138,15 @@ The pen_shaft was designed with tight tolerances, with the specific idea that th
 and inside of the sled_cap would be sanded smooth after printing, so they may not slide
 freely immediately after printing.  It is difficult to sand the inside of the sled_cap/base,
 and care should be taken when sanding the pen_shaft itself so as not to introduce wobble
-or too much loosensess.  One way or the other it is key that the pen shaft move smoothly
+or too much looseness.  One way or the other it is key that the pen shaft move smoothly
 up and down and that the bearings are free to rotate.  So you must sand things and/or
-even reslice and reprint them as necessary until you get a good working set of sled parts.
+even re-slice and reprint them as necessary until you get a good working set of sled parts.
 
 A dry or wet lubricant may be helpful.  I used a little silicon grease but I think it
 is a bit heavy.  Some light lubricating oil or a dry graphite lubricant might
 work better.
 
-Once the sled parts have been printed and dry fitted and you are satisified with them,
+Once the sled parts have been printed and dry fitted and you are satisfied with them,
 assembly of the sled may proceed.
 
 
@@ -187,7 +187,7 @@ so that it will end up at 200mm from the center of the sled.
 
 Place a ruler against the edge of the belt attachment and measure **160 mm** along
 the belt. That will be the "leading edge" of the zero mark.  Place the aluminum
-or electical tape, or paint the line, starting there and proceeding away from
+or electrical tape, or paint the line, starting there and proceeding away from
 the sled for 5 mm.
 
 Another reason I prefer the tape approach to the paint approach is that you
@@ -372,7 +372,7 @@ is the tip of the pen.
 The weights on the sled are attached with M3x5 wood/metal screws.  **It is important
 that the heads of the screws do not protrude past the bottoms of the holes!!**.
 The right-bottom weight is attached directly with a screw.  The top weight
-is fitted on a piece of steel wire with a loop bent in it for the screew.
+is fitted on a piece of steel wire with a loop bent in it for the screw.
 
 It's a balancing act.  We are also trying to keep the rotational orientation of the sled
 more or less fixed, so the heavier weight at the bottom serves that purpose: to
@@ -445,7 +445,7 @@ LED cover piece and two M2x5mm screws directly into the plastic.
 [![mount_led_strip.jpg](images/mount_led_strip.jpg)](images/mount_led_strip_large.jpg)
 [![mount_tft.jpg](images/mount_tft.jpg)](images/mount_tft_large.jpg)
 
-You can then mount the entire assembly just above the cicuit board and
+You can then mount the entire assembly just above the circuit board and
 attach the LCD connector and LED strip connectors to the circuit
 board.
 

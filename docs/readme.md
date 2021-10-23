@@ -12,7 +12,7 @@ It is essentially a CNC machine that uses *triangular kinematics* to work in a
 cartesian coordinate system.
 
 It is based on the inexpensive, yet powerful **ESP32** module, rather than the usual
-Arduino class proessors.  The ESP32 can easily be programmed from within the
+Arduino class processors.  The ESP32 can easily be programmed from within the
 Arduino development environment and has *dual cores*, runs at *240 Mhz* (as opposed to
 the Arduino at 16Mhz) and comes with *520KB* (as opposed to 2KB) *of RAM*.  In addition
 the ESP32 includes full onboard **WiFi and Bluetooth** capabilities, and can be had for
@@ -141,7 +141,7 @@ you should **START** with the **[Installation](Installation.md)**
 page and the first thing you should do is *build the firmware and install it*
 to a bare ESP32 dev module with just a USB cable.
 
-As part of *that* process it is required that you verify and and utilize the browser
+As part of *that* process it is required that you verify and utilize the browser
 based WiFi UI to the module and upload some files to the file system on the ESP32,
 so with just the bare ESP32 module you can verify that the firmware is installed,
 test the Web UI, and make sure that it runs more or less correctly BEFORE investing
@@ -158,7 +158,7 @@ you will find it useful and/or interesting.
 Please also see another CNC machine based on the same architecture,
 my implementation of an ESP32 3 axis machine on an inexpensive
 [**CNC 3018**](https://github.com/phorton1/Arduino-CNC3018_ESP)
-from china (ebay).
+from China [ebay](https://www.ebay.com/itm/392298131168).
 
 These "machines"  are relatively small INO programs.  They are built on top of a
 number of other libraries that provide the bulk of the functionality.
@@ -200,7 +200,7 @@ core.  Specific contents at this time include:
 
 ## Credits and License
 
-This library is licensed undere the
+This library is licensed under the
 [GNU General Public License v3.0](https://github.com/phorton1/Arduino-_vMachine/tree/master/LICENSE.TXT)
 
 **Credits**

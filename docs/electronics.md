@@ -146,7 +146,7 @@ The milled PCB's came out pretty nice and it was easy to solder the parts to the
 [![vsensor_parts.jpg](images/vsensor_parts_resized.jpg)](images/vsensor_parts.jpg)
 
 They fit nicely into the 3D printed housings over the stepper motors,
-and when adjusted they reliabaly detect the aluminum tape strip on the
+and when adjusted they reliably detect the aluminum tape strip on the
 vMachine belts.
 
 
