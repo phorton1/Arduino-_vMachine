@@ -157,7 +157,7 @@ you will find it useful and/or interesting.
 
 Please also see another CNC machine based on the same architecture,
 my implementation of an ESP32 3 axis machine on an inexpensive
-[**CNC 3018**](https://github.com/phorton1/Arduino-CNC3018_ESP)
+[**CNC 3018**](https://github.com/phorton1/Arduino-esp32_cnc3018)
 from China [ebay](https://www.ebay.com/itm/392298131168).
 
 These "machines"  are relatively small INO programs.  They are built on top of a
