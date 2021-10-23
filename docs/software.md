@@ -119,6 +119,33 @@ settings and accessors to them for things like the machine
 width and height, distance between motors, and so on, that
 are used in the implementation of the kinematics, homing, etc.
 
+The specific settings, and their default values are shown below.
+
+- **$machine_width**            = 400 mm
+- **$machine_height** 		    = 300 mm
+- **$dist_between_motors**	    = 730.25 mm
+- **$motor_offset_y**		    = 125.9 mm
+- **$sprocket_radius**          = 4.8 mm
+- **$chain_tolerance_left**     = 0
+- **$right_tolerance_right**    = 0
+- **$sag_correction**           = 0
+- **$sled_radius**              = 0 mm
+- **$guess_tolerance** 		    = 0.05 mm
+- **$guess_num_max**     		= 200
+- **$guess_max_chain_length**   = 1000
+- **$zero_length**              = 209.849 mm
+- **$zero_offset_left**         = -10.0 mm
+- **$zero_offset_right**        = -10.0 mm
+- **$safe_area_offset**         = 5.0 mm
+- **$safe_position_z**     	    = -70 degrees
+- **$line_segment_length**      = 0.5 mm
+
+Please see **vMachine.cpp** and the implementation files for
+descriptions of these settings and how they are used.
+
+
+
+
 
 <br>
 

@@ -7,15 +7,6 @@
 	// avoid linking in the WEAK_LINK overrides
 
 #define DEBUG_YAML 						0
-#define CONFIGURE_WIFI_EXPERIMENT   	0
-
-
-#if CONFIGURE_WIFI_EXPERIMENT
-	#include <Machine/Communications.h>
-	#include <Machine/WifiAPConfig.h>
-	#include <Machine/WifiSTAConfig.h>
-#endif
-
 
 
 //----------------------------------------------
@@ -36,13 +27,13 @@
 //---------------------------------------
 // The "machine area" is 400x300mm == 15.748" x 11.811"
 
-#define VMACHINE_DEFAULT_MACHINE_WIDTH          400  // mm, $vMachine/machineWidth
-#define VMACHINE_DEFAULT_MACHINE_HEIGHT         300  // mm, $vMachine/machineHeight;
+#define VMACHINE_DEFAULT_MACHINE_WIDTH          400  // mm
+#define VMACHINE_DEFAULT_MACHINE_HEIGHT         300  // mm
 
 // the work area is 4" and a distance below the center line between motors
 
-#define VMACHINE_DEFAULT_DIST_BETWEEN_MOTORS    (28.75 * 25.4)       // 730.25 mm, $vMachine/distBetweenMotors
-#define VMACHINE_DEFAULT_MOTOR_OFFSET_Y         ((4 * 25.4) + 24.3)  // 125.9 mm,  $vMachine/motorOffsetY;
+#define VMACHINE_DEFAULT_DIST_BETWEEN_MOTORS    (28.75 * 25.4)       // 730.25 mm
+#define VMACHINE_DEFAULT_MOTOR_OFFSET_Y         ((4 * 25.4) + 24.3)  // 125.9 mm
 
 // defaults for kinematic calculation details
 
@@ -50,26 +41,26 @@
 
 // if using sag calculations (see vKinematics.cpp)
 
-#define VMACHINE_DEFAULT_CHAIN_LEFT_TOLERANCE    0.0   // $ESP922, $vMachine/leftChainTolerance
-#define VMACHINE_DEFAULT_CHAIN_RIGHT_TOLERANCE   0.0   // $ESP924, $vMachine/rightChainTolerance
-#define VMACHINE_DEFAULT_CHAIN_SAG_CORRECTION    0.0   // $ESP926, $vMachine/chainSagCorrection
-#define VMACHINE_DEFAULT_SLED_RADIUS             0.0   // mm, $ESP928, $vMachine/rotationDiskRadius
+#define VMACHINE_DEFAULT_CHAIN_LEFT_TOLERANCE    0.0
+#define VMACHINE_DEFAULT_CHAIN_RIGHT_TOLERANCE   0.0
+#define VMACHINE_DEFAULT_CHAIN_SAG_CORRECTION    0.0
+#define VMACHINE_DEFAULT_SLED_RADIUS             0.0   // mm
 
 // The number of guesses in forward kinematics could be a
 // performance or accuracy issue. The following are only
 // used in forward kinematics which is only used for reporting.
 
-#define VMACHINE_DEFAULT_FORWARD_GUESS_TOLERANCE  0.05  // mm,$ESP935,$vMachine/forwardGuessTolerance
+#define VMACHINE_DEFAULT_FORWARD_GUESS_TOLERANCE  0.05  // mm
     // How close should we try to get to an X,Y position in forward kinematics.
-#define VMACHINE_DEFAULT_MAX_FORWARD_GUESSES      200   // $ESP937,$vMachine/maxForwardGuesses
+#define VMACHINE_DEFAULT_MAX_FORWARD_GUESSES      200
     // number of tries to converge to FORWARD_GUESS_TOLERANCE or fail
-#define VPLOTTEER_DEFAULT_GUESS_MAX_CHAIN_LENGTH  1000  // mm, $ESP939, $vMachine/guessMaxchainLength
+#define VPLOTTEER_DEFAULT_GUESS_MAX_CHAIN_LENGTH  1000  // mm
     // should be about the length of chain from bottom of opposite work corner to sprocket plus some slop
     // foward guessing stops (fails) if it gets to a chain length over this
 
 // Behavioral Defaults
 
-#define VMACHINE_DEFAULT_ZERO_LENGTH         209.849     // mm    $vMachine/zeroLength
+#define VMACHINE_DEFAULT_ZERO_LENGTH         209.849     // mm
 	// 209.849 = sqrt(129.5^2 + 165.125^2)
 	//
 	// This number is the length of the hypotenuse from the center of the  motor
@@ -80,8 +71,8 @@
 	// where MOTOR_X_OFFSET = (DIST_BETWEEN_MOTORS - VMACHINE_DEFAULT_MACHINE_WIDTH)/2,
 	// or (730.25-400)/2 = 330.25/2 = 165.125 in our case, so sqrt(129.5^2 + 165.125)
 
-#define VMACHINE_DEFAULT_LEFT_ZERO_OFFSET    -10.000     // mm, $vMachine/leftZeroOffsest  (-10 mm == -500 steps)
-#define VMACHINE_DEFAULT_RIGHT_ZERO_OFFSET   -10.000     // mm, $vMachine/rightZeroOffsest
+#define VMACHINE_DEFAULT_LEFT_ZERO_OFFSET    -10.000     // mm(-10 mm == -500 steps)
+#define VMACHINE_DEFAULT_RIGHT_ZERO_OFFSET   -10.000     // mm
 	// We place the white stripes 10mm closer to the sled, given by these constants,
 	// so that when the sensors are triggered we are at VMACHINE_DEFAULT_ZERO_LENGTH - 10mm,
 	// thus the we can reach the work area without triggering the sensors again, since it
@@ -93,16 +84,16 @@
 	//
 	// This gives us a little extra room to work with.
 
-#define VMACHINE_DEFAULT_SAFE_AREA_OFFSET       5.0     // mm, $ESP951, $vMachine/safeAreaOffset
+#define VMACHINE_DEFAULT_SAFE_AREA_OFFSET       5.0     // mm
 	// we define a safe area around the work area to constrain movements
 	// and for soft limit checks.  This should all be within the augmented
 	// work area as defined by the Zero Offset settings above.
 
-#define VMACHINE_DEFAULT_Z_AXIS_SAFE_POSITION   -70 	// mm, $ESP953, $vMachine/zAxisHomeSafe
+#define VMACHINE_DEFAULT_Z_AXIS_SAFE_POSITION   -70 	// mm
 	// The absolute positions for the Z-Axis are 0==up in the air to -90==touching,
 	// hence we define "zero" as -90 for our paper settings above.  The safe travel
 	// in ABSOLUTE settings is then something like -70
-#define VMACHINE_DEFAULT_LINE_SEGMENT_LENGTH    0.5	// mm, $ESP955, $vMachine/lineSegLength
+#define VMACHINE_DEFAULT_LINE_SEGMENT_LENGTH    0.5	// mm
 	// length of subsegments done by cartesian_to_motors()
 
 
@@ -113,27 +104,6 @@ void vMachine::afterParse() // override
 {
 	#if DEBUG_YAML
 		g_debug("---> vMachine::afterParse() called");
-	#endif
-
-	#if CONFIGURE_WIFI_EXPERIMENT
-		if (!_comms)
-		{
-			log_info("Comms: vMachine creating _comms");
-			_comms = new Machine::Communications();
-		}
-		#ifdef ENABLE_WIFI
-			if (!_comms->_apConfig)
-			{
-				log_info("Comms: vMachine creating _comms->_apConfig");
-				_comms->_apConfig = new Machine::WifiAPConfig();
-			}
-			if (!_comms->_staConfig)
-			{
-				log_info("Comms: vMachine creating _comms->_apConfig");
-				_comms->_staConfig = new Machine::WifiSTAConfig();
-				// _comms->_staConfig->_ssid = "THX36";
-			}
-		#endif
 	#endif
 
 	// At this point the tree is fleshed out with items from the yaml file, but not
