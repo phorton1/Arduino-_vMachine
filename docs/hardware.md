@@ -90,9 +90,9 @@ The sled consists of several parts
 
 The sled parts are all printed without supports.
 
-[![3D_sled_base.jpg](images/3d_sled_base_resized.jpg)](images/3D_sled_base.jpg)
-[![3D_sled_cap.jpg](images/3d_sled_cap_resized.jpg)](images/3D_sled_cap.jpg)
-[![3D_sled_bearings.jpg](images/3d_sled_bearings_resized.jpg)](images/3D_sled_bearings.jpg)
+[![3D_sled_base.jpg](images/3D_sled_base_resized.jpg)](images/3D_sled_base.jpg)
+[![3D_sled_cap.jpg](images/3D_sled_cap_resized.jpg)](images/3D_sled_cap.jpg)
+[![3D_sled_bearings.jpg](images/3D_sled_bearings_resized.jpg)](images/3D_sled_bearings.jpg)
 
 The **sled_cap** screws onto the sled_base, allowing a little room for the sled bearings to
 move while holding the RC Servo in a more-or-less vertical orientation.
