@@ -66,7 +66,7 @@ Here is the schematic
 [![vMachine_controller_schematic.pdf](images/vMachine_controller_schematic.jpg)](images/vMachine_controller_schematic.pdf)
 
 
-Sigh/lol, you can ignore all the boxes labelled "v00" through "v100".
+You can ignore all the boxes labelled "v00" through "v100".
 I did not know how to "untent vias" in kiCad when I made this and so
 I put all my vias in the schematic as single pin connectors.
 
@@ -123,7 +123,7 @@ sensor is triggered.
 ![vMachine_sensor_schematic.jpg](images/vMachine_sensor_schematic.jpg)
 
 I believe this circuit is substantially the same as the robotic "infrared
-obstacle avoidance modules" that sell on ebay for $1.50 or less lol like
+obstacle avoidance modules" that sell on ebay for $1.50 or less like
 the one below:
 
 ![store_bought_ir_sensor.jpg](images/store_bought_ir_sensor.jpg)

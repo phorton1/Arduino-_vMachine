@@ -92,7 +92,7 @@ so that it can sense when the white stripe passes over the motor pulley:
 
 ## A Board of Some Sort
 
-I looked around the boat for a **board** to mount the motors on, and, lol, the best board
+I looked around the boat for a **board** to mount the motors on, and the best board
 I found was the *support for my bed*!   So I pulled the board out from under my bed, drilled
 a few holes in it, and mounted the motors and breadboard on it so that I could try it:
 
@@ -128,7 +128,6 @@ I learned how to **mill my own PCB boards** and so, when it came time to return 
 the vMachine to write this documentation, I essentially decided to rebuild it from
 scratch using a home made PCB.
 
-Sigh/LOL.
 
 So I did that and these pages now describe the second, and perhaps final version of the
 vMachine, and not, per-se, the machine pictured above.  Nonetheless, I wanted to preserve
