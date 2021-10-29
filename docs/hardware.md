@@ -56,7 +56,8 @@ unless otherwise noted.  The first files printed from the **stl directory** are 
 I print these "face down" with no supports.
 
 Then *two sets* of the **sensor_housing** and **sensor_top** are printed in the orientation
-shown below so they also need no supports.
+shown below so they also need no supports.  Because they are small and detailed, I printed
+these at 0.2mm layer heights in "quality" smode.
 
 [![3D_infrared_housing.jpg](images/3D_infrared_housing_resized.jpg)](images/3D_infrared_housing.jpg)
 
@@ -95,7 +96,7 @@ The sled parts are all printed without supports.
 [![3D_sled_bearings.jpg](images/3D_sled_bearings_resized.jpg)](images/3D_sled_bearings.jpg)
 
 The **sled_cap** screws onto the sled_base, allowing a little room for the sled bearings to
-move while holding the RC Servo in a more-or-less vertical orientation.
+turn while still snugly holding the RC Servo in a more-or-less vertical orientation.
 
 Note that the left **sled_bearing** is taller than the right **sled_bearing** and goes on the bottom.
 I sanded the bearing faces to make them as smooth as possible.  Later we will put a little

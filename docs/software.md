@@ -63,7 +63,7 @@ Below the seecond *dotted line* is
 [**my fork**](https://github.com/phorton1/Arduino-libraries-FluidNC)
 of the **FluidNC** project
 repository.  The bulk of the actual functionality of the vMachine is
-provided by this library.  It in turn tepends on the **TMCStepper**,
+provided by this library.  It in turn depends on the **TMCStepper**,
 **ESP32SSDP**, and **arduinoWebSockets** libraries.
 
 
