@@ -1,5 +1,47 @@
 This notes.md contains various notes to myself.
 
+## Realtime Architecture
+
+```
+    void IRAM_ATTR Stepping::onStepperDriverTimer() {   // always init'd not always started
+        ++isr_count;
+        timerWrite(stepTimer, 0ULL);
+        timerAlarmEnable(stepTimer);
+        Stepper::pulse_func();
+    }
+
+
+    void Stepping::init() {
+        log_info("Stepping:" << stepTypes[_engine].name << " Pulse:" << _pulseUsecs << "us Dsbl Delay:" << _disableDelayUsecs
+                             << "us Dir Delay:" << _directionDelayUsecs << "us Idle Delay:" << _idleMsecs << "ms");
+
+        // Prepare stepping interrupt callbacks.  The one that is actually
+        // used is determined by startTimer() and stopTimer()
+
+        const bool isEdge  = false;
+        const bool countUp = true;
+
+        // Setup a timer for direct stepping
+        stepTimer = timerBegin(stepTimerNumber, fTimers / fStepperTimer, countUp);
+        timerAttachInterrupt(stepTimer, onStepperDriverTimer, isEdge);
+        ...
+
+    void Stepping::startTimer() {
+        if (_engine == I2S_STREAM) {
+            i2s_out_set_stepping();
+        } else {
+            timerWrite(stepTimer, 0ULL);
+            timerAlarmEnable(stepTimer);
+        }
+    }
+    void IRAM_ATTR Stepping::stopTimer() {
+        if (_engine == I2S_STREAM) {
+            i2s_out_set_passthrough();
+        } else if (stepTimer) {
+            timerAlarmDisable(stepTimer);
+        }
+    }
+```
 
 ## Ideas for SDCard rewrite
 
