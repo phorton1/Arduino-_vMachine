@@ -137,7 +137,7 @@ bool in_homing = false;
 #if INIT_SDCARD_AT_STARTUP
 	static void debug_start_sdcard()
 	{
-		g_info("starting sdCard via FluidNC");
+		g_debug("starting sdCard via FluidNC");
 		SDState state = g_status.getSDState(true);
 
 		if (state == SDState::NotPresent)
