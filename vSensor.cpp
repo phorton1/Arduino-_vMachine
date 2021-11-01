@@ -16,7 +16,7 @@
 
 #define DEBUG_SENSOR  0
 
-#define  VTASK_DELAY_MS  20
+#define  VTASK_DELAY_MS  10
 
 vSensor x_sensor;
 vSensor y_sensor;

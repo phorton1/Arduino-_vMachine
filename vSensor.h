@@ -6,7 +6,7 @@
 #include <cstdint>
 
 
-#define VSENSOR_BUFSIZE        6
+#define VSENSOR_BUFSIZE        3
 #define VSENSOR_DEFAULT_V_ON   2048     // 2048     // 1.65V
 #define VSENSOR_DEFAULT_V_OFF  1850     // 1800     // 1.45V
     // The thresholds are in terms of a 12 bit sample (0..4095)
