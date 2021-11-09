@@ -55,6 +55,8 @@ axes:
         motor0:
             rc_servo:
                 output_pin: gpio.33
+                # min_pulse_us: 500
+                # max_pulse_us: 2200
 
 start:
   must_home: false
