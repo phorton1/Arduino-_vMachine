@@ -18,7 +18,7 @@ it working well enough to build a machine and draw a picture.
 
 Here is a timelapse video of the early vMachine printing a picture of a sailboat:
 
-[![early_demo_youtube.jpg](images/early_demo_youtube.jpg)](https://youtu.be/bSlaEzazfRE.jpg)
+[![early_demo_youtube.jpg](images/early_demo_youtube.jpg)](https://youtu.be/bSlaEzazfRE)
 
 The version of the vMachine (that drew the above image) used a bread-boarded circuit (not soldered)
 and looked like this:
@@ -123,7 +123,7 @@ and one for the overall system state (blue=idle, yellow=busy, flashing red=error
 
 The point is that one thing led to another and before I was ready to start THIS documentation
 effort, I had already moved on to, and ended up completing another whole "machine" ... the
-[cnc3018](https://github.com/phorton1/arduino-cnc3018) machine.  As part of THAT process
+[cnc3018](https://github.com/phorton1/Arduino-esp32_cnc3018) machine.  As part of THAT process
 I learned how to **mill my own PCB boards** and so, when it came time to return to
 the vMachine to write this documentation, I essentially decided to rebuild it from
 scratch using a home made PCB.

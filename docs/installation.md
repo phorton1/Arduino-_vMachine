@@ -31,7 +31,7 @@ Please follow the instructions on the linked pages to install each library and i
     - **arduinoWebSockets** (included in the FluidNC repository)
     - **ESP32SSDP** (included in the FluidNC repository)
     - **TMCStepper** (installed using the Arduino IDE *Library Manager*)
-- install my [**FluidNC_extensions**](https://github.com/phorton1/Arduino-libraries-FluidNC_extensions) library
+- install my [**FluidNC_Extensions**](https://github.com/phorton1/Arduino-libraries-FluidNC_Extensions) library
 - If you are building the machine with the (optional) TFT Display
  (by default **WITH_UI** is defined in vMachine.h),
  then install my [**FluidNC_UI**](https://github.com/phorton1/Arduino-libraries-FluidNC_UI) library, and it's

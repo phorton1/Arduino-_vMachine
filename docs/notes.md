@@ -12,7 +12,7 @@ This notes.md contains various notes to myself.
 
 
     void Stepping::init() {
-        log_info("Stepping:" << stepTypes[_engine].name << " Pulse:" << _pulseUsecs << "us Dsbl Delay:" << _disableDelayUsecs
+        log_info("Stepping:" << stepTypes\[_engine].name << " Pulse:" << _pulseUsecs << "us Dsbl Delay:" << _disableDelayUsecs
                              << "us Dir Delay:" << _directionDelayUsecs << "us Idle Delay:" << _idleMsecs << "ms");
 
         // Prepare stepping interrupt callbacks.  The one that is actually
@@ -113,7 +113,7 @@ for transmission over the serial port.
 For completeness, please note the following RepRap M codes which are
 NOT part of GRBL ... these codes have completely different semantics
 in GRBL and there are no equivilants in FluidNC:
-
+```
     M21 Initialise (mount) SD Card
     M22 Release (unmount) SD Card
     M23 Select File for Printing
@@ -123,7 +123,7 @@ in GRBL and there are no equivilants in FluidNC:
     M27 SD Print status
     M28 Write programm to SD Card
     M29 Stop writing programm to SD Card
-
+```
 
 
 
@@ -141,7 +141,7 @@ we did that when the machine was at 200,150,4.
 (G10 L2 lets you set the numbers directly)
 
 If you type $# you can see the machine's coordinate systems:
-
+```
     $#
     [G54:200.000,150.000,4.000]
     [G55:0.000,0.000,0.000]
@@ -154,6 +154,7 @@ If you type $# you can see the machine's coordinate systems:
     [G92:0.000,0.000,0.000]
     [TLO:0.000]
     [PRB:0.000,0.000,0.000:0]
+```
 
 G54 through G59 define six coordinate systems that you may
 change between  G28 and G30 are predefined positions, and
